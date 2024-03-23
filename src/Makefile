@@ -571,10 +571,6 @@ ifeq ($(optimize),yes)
 			endif
 		endif
 	endif
-
-	ifeq ($(comp),clang)
-		CXXFLAGS += -fexperimental-new-pass-manager
-	endif
 endif
 
 ### 3.4 Bits
