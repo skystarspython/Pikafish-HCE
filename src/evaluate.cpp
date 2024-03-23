@@ -127,7 +127,7 @@ namespace {
     Score PalaceAttacks[9] = {
         S(0,0),S(0,0),S(0,0),S(0,0),S(0,0),S(0,0),S(0,0),S(0,0),S(0,0)
     };
-    TUNE(PalaceAttacks,SetRange(-500,500));
+    TUNE(SetRange(-500,500),PalaceAttacks);
 
     // Polynomial material imbalance parameters
 
