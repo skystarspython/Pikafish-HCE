@@ -1,0 +1,16 @@
+# Files from build
+**/*.o
+**/*.s
+src/.depend
+
+# Files from Qt
+*.pro
+*.pro.user
+
+# Built binary
+src/pikafish*
+src/-lstdc++.res
+
+# Neural network for the NNUE evaluation
+**/*.nnue
+
