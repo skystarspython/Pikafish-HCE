@@ -124,6 +124,10 @@ namespace {
         S(-58, -7), S(19, 0), S(11, -11), S(-23, 6), S(-11, -7), S(-17, -13)
     };
     Score ConnectedPawn = S(5, -5);
+    Score PalaceAttacks[9] = {
+        S(0,0),S(0,0),S(0,0),S(0,0),S(0,0),S(0,0),S(0,0),S(0,0),S(0,0)
+    };
+    TUNE(PalaceAttacks,SetRange(-500,500));
 
     // Polynomial material imbalance parameters
 
@@ -280,6 +284,11 @@ namespace {
         score += CrossedPawn[crossedPawnCnt];
         // 牵手兵
         score += ConnectedPawn * popcount(shift<EAST>(pos.pieces(Us, PAWN)) & pos.pieces(Us, PAWN));
+        // 对手九宫
+        constexpr Bitboard oppositePalace = (FileDBB | FileEBB | FileFBB) & (Us == WHITE ? (Rank7BB | Rank8BB | Rank9BB) : (Rank0BB | Rank1BB | Rank2BB));
+        // 对手九宫被我方攻击的位置数
+        int palaceAttackCnt = popcnt(oppositePalace & attackedBy[Us][ALL_PIECES] & !attackedBy[Them][ALL_PIECES]);
+        score += PalaceAttacks[palaceAttackCnt];
         return score;
     }
 
