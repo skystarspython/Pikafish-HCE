@@ -131,9 +131,9 @@ namespace {
     Score ProtectedCannonWithCentralKnight = S(0, 0);
     Score ProtectedBottomCannon = S(0, 0);
     Score RookOnOpenFile[2] = { S(0, 0), S(0, 0) };
-    Score ThreePiecesOnOneSide = S(0, 0);
+    Score PiecesOnOneSide[5] = { S(0, 0), S(0, 0), S(0, 0), S(0, 0), S(0, 0) };
     TUNE(SetRange(-200, 200),HollowCannon, CentralKnight, BottomCannon, AttackedHollowCannon, AttackedCannonWithCentralKnight, AttackedBottomCannon, ProtectedHollowCannon,
-        ProtectedCannonWithCentralKnight, ProtectedBottomCannon, RookOnOpenFile, ThreePiecesOnOneSide);
+        ProtectedCannonWithCentralKnight, ProtectedBottomCannon, RookOnOpenFile, PiecesOnOneSide);
 
     // Polynomial material imbalance parameters
 
@@ -288,8 +288,8 @@ namespace {
                 }
                 if constexpr (Pt == ROOK)
                 {
-                    if (!(pieces(Us, PAWN) & file_bb(s))) {
-                        score += RookOnOpenFile;
+                    if (pos.is_on_semiopen_file(Us, s)) {
+                        score += RookOnOpenFile[pos.is_on_semiopen_file(Them, s)];
                     }
                 }
             }
@@ -319,7 +319,9 @@ namespace {
             Bitboard strongPieces = pos.pieces(Us, ROOK) | pos.pieces(Us, KNIGHT) | pos.pieces(Us, CANNON);
             Bitboard attackedPieces = attackedBy[Them][PAWN] | attackedBy[Them][ADVISOR] | attackedBy[Them][BISHOP]
                 | attackedBy[Them][CANNON] | attackedBy[Them][KNIGHT] | (attackedBy[Them][ROOK] & ~attackedBy[Us][ALL_PIECES]);
-            score += popcount(strongPieces & side & crossed & (~attackedPieces)) * ThreePiecesOnOneSide;
+            int cnt = popcount(strongPieces & side & crossed & (~attackedPieces));
+            cnt = cnt >= 5 ? 4 : cnt;
+            score += PiecesOnOneSide[cnt];
         }
         return score;
     }

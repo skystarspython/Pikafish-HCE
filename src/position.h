@@ -100,6 +100,7 @@ public:
   template<PieceType Pt> int count(Color c) const;
   template<PieceType Pt> int count() const;
   template<PieceType Pt> Square square(Color c) const;
+  bool is_on_semiopen_file(Color c, Square s) const;
 
   // Checking
   Bitboard checkers() const;
@@ -244,6 +245,10 @@ template<PieceType Pt> inline int Position::count() const {
 template<PieceType Pt> inline Square Position::square(Color c) const {
   assert(count<Pt>(c) == 1);
   return lsb(pieces(c, Pt));
+}
+
+inline bool Position::is_on_semiopen_file(Color c, Square s) const {
+    return !(pieces(c, PAWN) & file_bb(s));
 }
 
 inline Bitboard Position::attackers_to(Square s) const {
