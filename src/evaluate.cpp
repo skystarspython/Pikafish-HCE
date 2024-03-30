@@ -124,10 +124,16 @@ namespace {
         S(-58, -7), S(19, 0), S(11, -11), S(-23, 6), S(-11, -7), S(-17, -13)
     };
     Score ConnectedPawn = S(5, -5);
-    Score PalaceAttacks[9] = {
-        S(0,0),S(0,0),S(0,0),S(0,0),S(0,0),S(0,0),S(0,0),S(0,0),S(0,0)
-    };
-    TUNE(SetRange(-500,500),PalaceAttacks);
+    Score AttackedHollowCannon = S(0, 0);
+    Score AttackedCannonWithCentralKnight = S(0, 0);
+    Score AttackedBottomCannon = S(0, 0);
+    Score ProtectedHollowCannon = S(0, 0);
+    Score ProtectedCannonWithCentralKnight = S(0, 0);
+    Score ProtectedBottomCannon = S(0, 0);
+    Score RookOnOpenFile[2] = { S(0, 0), S(0, 0) };
+    Score ThreePiecesOnOneSide = S(0, 0);
+    TUNE(SetRange(-200, 200),HollowCannon, CentralKnight, BottomCannon, AttackedHollowCannon, AttackedCannonWithCentralKnight, AttackedBottomCannon, ProtectedHollowCannon,
+        ProtectedCannonWithCentralKnight, ProtectedBottomCannon, RookOnOpenFile, ThreePiecesOnOneSide);
 
     // Polynomial material imbalance parameters
 
@@ -253,18 +259,38 @@ namespace {
                 int blocker = popcount(between_bb(s, ksq) & pos.pieces()) - 1;
                 const Bitboard originalAdvisor = square_bb(SQ_D0) | square_bb(SQ_D9) | square_bb(SQ_F0) | square_bb(SQ_F9);
                 Bitboard advisorBB = pos.pieces(Them, ADVISOR);
+                bool attackedCannon = !(attackedBy[Them][ALL_PIECES] & s & (~attackedBy[Us][ALL_PIECES])) || attackedBy[Them][PAWN] & s;
+                bool protectedCannon = attackedBy[Us][PAWN] & s;
                 if (file_of(s) == FILE_E && (ksq == SQ_E0 || ksq == SQ_E9) && popcount(originalAdvisor & advisorBB) == 2) {
                     if (!blocker) { // 空头炮
                         score += HollowCannon;
+                        if (attackedCannon)
+                            score += AttackedHollowCannon;
+                        else if (protectedCannon)
+                            score += ProtectedHollowCannon;
                     }
                     if (blocker == 2 && (between_bb(s, ksq) & pos.pieces(Them, KNIGHT) & attackedBy[Them][KING])) { // 炮镇窝心马
                         score += CentralKnight;
+                        if (attackedCannon)
+                            score += AttackedCannonWithCentralKnight;
+                        else if (protectedCannon)
+                            score += ProtectedCannonWithCentralKnight;
                     }
                 }
                 Rank enemyBottom = (Us == WHITE ? RANK_9 : RANK_0);
                 Square enemyCenter = (Us == WHITE ? SQ_E8 : SQ_E1);
                 if (rank_of(s) == enemyBottom && !blocker && (ksq == SQ_E0 || ksq == SQ_E9) && (pos.pieces(Them) & enemyCenter)) { // 沉底炮
                     score += BottomCannon;
+                    if (attackedCannon)
+                        score += AttackedBottomCannon;
+                    else if (protectedCannon)
+                        score += ProtectedBottomCannon;
+                }
+                if constexpr (Pt == ROOK)
+                {
+                    if (!(pieces(Us, PAWN) & file_bb(s))) {
+                        score += RookOnOpenFile;
+                    }
                 }
             }
         }
@@ -279,16 +305,22 @@ namespace {
         if (pos.count<ADVISOR>(Us) + pos.count<BISHOP>(Us) == 4)
             score += AdvisorBishopPair;
         // 过河兵 (~8.5 Elo)
-        constexpr Bitboard crossed = (Us == WHITE ? (Rank5BB | Rank6BB | Rank7BB | Rank8BB) : (Rank1BB | Rank2BB | Rank3BB | Rank4BB)); // 底线不算
-        int crossedPawnCnt = popcount(crossed & pos.pieces(Us, PAWN));
+        constexpr Bitboard crossedWithoutBottom = (Us == WHITE ? (Rank5BB | Rank6BB | Rank7BB | Rank8BB) : (Rank1BB | Rank2BB | Rank3BB | Rank4BB)); // 底线不算
+        int crossedPawnCnt = popcount(crossedWithoutBottom & pos.pieces(Us, PAWN));
         score += CrossedPawn[crossedPawnCnt];
         // 牵手兵
         score += ConnectedPawn * popcount(shift<EAST>(pos.pieces(Us, PAWN)) & pos.pieces(Us, PAWN));
-        // 对手九宫
-        constexpr Bitboard oppositePalace = (FileDBB | FileEBB | FileFBB) & (Us == WHITE ? (Rank7BB | Rank8BB | Rank9BB) : (Rank0BB | Rank1BB | Rank2BB));
-        // 对手九宫被我方攻击的位置数
-        int palaceAttackCnt = popcount(oppositePalace & attackedBy[Us][ALL_PIECES] & !attackedBy[Them][ALL_PIECES]);
-        score += PalaceAttacks[palaceAttackCnt];
+        constexpr Bitboard crossed = (Us == WHITE ? (Rank5BB | Rank6BB | Rank7BB | Rank8BB | Rank9BB) : (Rank0BB | Rank1BB | Rank2BB | Rank3BB | Rank4BB));
+        constexpr Bitboard left = (FileABB | FileBBB | FileCBB | FileDBB);
+        constexpr Bitboard right = (FileFBB | FileGBB | FileHBB | FileIBB);
+        // 三子归边
+        for (int i = 0; i <= 1; i++) {
+            Bitboard side = (i == 0 ? left : right);
+            Bitboard strongPieces = pos.pieces(Us, ROOK) | pos.pieces(Us, KNIGHT) | pos.pieces(Us, CANNON);
+            Bitboard attackedPieces = attackedBy[Them][PAWN] | attackedBy[Them][ADVISOR] | attackedBy[Them][BISHOP]
+                | attackedBy[Them][CANNON] | attackedBy[Them][KNIGHT] | (attackedBy[Them][ROOK] & ~attackedBy[Us][ALL_PIECES]);
+            score += popcount(strongPieces & side & crossed & (~attackedPieces)) * ThreePiecesOnOneSide;
+        }
         return score;
     }
 
@@ -400,6 +432,7 @@ Value Eval::evaluate(const Position& pos, int* complexity) {
 
   if (complexity)
       *complexity = 0;
+
   Value v = Evaluation<NO_TRACE>(pos).value();
 
   // Damp down the evaluation linearly when shuffling
