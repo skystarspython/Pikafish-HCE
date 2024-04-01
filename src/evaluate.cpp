@@ -124,6 +124,8 @@ namespace {
         S(-58, -7), S(19, 0), S(11, -11), S(-23, 6), S(-11, -7), S(-17, -13)
     };
     Score ConnectedPawn = S(5, -5);
+    Score RookOnOpenFile[2] = { S(7, 10), S(3, 16) };
+    Score PiecesOnOneSide[5] = { S(-3, 5), S(-13, 36), S(18, 26), S(9, 26), S(10, -4) };
 
     // Polynomial material imbalance parameters
 
@@ -262,6 +264,12 @@ namespace {
                 if (rank_of(s) == enemyBottom && !blocker && (ksq == SQ_E0 || ksq == SQ_E9) && (pos.pieces(Them) & enemyCenter)) { // 沉底炮
                     score += BottomCannon;
                 }
+                if constexpr (Pt == ROOK)
+                {
+                    if (pos.is_on_semiopen_file(Us, s)) {
+                        score += RookOnOpenFile[pos.is_on_semiopen_file(Them, s)];
+                    }
+                }
             }
         }
         return score;
@@ -275,11 +283,24 @@ namespace {
         if (pos.count<ADVISOR>(Us) + pos.count<BISHOP>(Us) == 4)
             score += AdvisorBishopPair;
         // 过河兵 (~8.5 Elo)
-        constexpr Bitboard crossed = (Us == WHITE ? (Rank5BB | Rank6BB | Rank7BB | Rank8BB) : (Rank1BB | Rank2BB | Rank3BB | Rank4BB)); // 底线不算
-        int crossedPawnCnt = popcount(crossed & pos.pieces(Us, PAWN));
+        constexpr Bitboard crossedWithoutBottom = (Us == WHITE ? (Rank5BB | Rank6BB | Rank7BB | Rank8BB) : (Rank1BB | Rank2BB | Rank3BB | Rank4BB)); // 底线不算
+        int crossedPawnCnt = popcount(crossedWithoutBottom & pos.pieces(Us, PAWN));
         score += CrossedPawn[crossedPawnCnt];
         // 牵手兵
         score += ConnectedPawn * popcount(shift<EAST>(pos.pieces(Us, PAWN)) & pos.pieces(Us, PAWN));
+        constexpr Bitboard crossed = (Us == WHITE ? (Rank5BB | Rank6BB | Rank7BB | Rank8BB | Rank9BB) : (Rank0BB | Rank1BB | Rank2BB | Rank3BB | Rank4BB));
+        constexpr Bitboard left = (FileABB | FileBBB | FileCBB | FileDBB);
+        constexpr Bitboard right = (FileFBB | FileGBB | FileHBB | FileIBB);
+        // 多子归边
+        for (int i = 0; i <= 1; i++) {
+            Bitboard side = (i == 0 ? left : right);
+            Bitboard strongPieces = pos.pieces(Us, ROOK) | pos.pieces(Us, KNIGHT) | pos.pieces(Us, CANNON);
+            Bitboard attackedPieces = attackedBy[Them][PAWN] | attackedBy[Them][ADVISOR] | attackedBy[Them][BISHOP]
+                | attackedBy[Them][CANNON] | attackedBy[Them][KNIGHT] | (attackedBy[Them][ROOK] & ~attackedBy[Us][ALL_PIECES]);
+            int cnt = popcount(strongPieces & side & crossed & (~attackedPieces));
+            cnt = cnt >= 5 ? 4 : cnt;
+            score += PiecesOnOneSide[cnt];
+        }
         return score;
     }
 
@@ -391,6 +412,7 @@ Value Eval::evaluate(const Position& pos, int* complexity) {
 
   if (complexity)
       *complexity = 0;
+
   Value v = Evaluation<NO_TRACE>(pos).value();
 
   // Damp down the evaluation linearly when shuffling
