@@ -130,10 +130,10 @@ namespace {
     Score ProtectedHollowCannon = S(0, 0);
     Score ProtectedCannonWithCentralKnight = S(0, 0);
     Score ProtectedBottomCannon = S(0, 0);
-    Score RookOnOpenFile[2] = { S(0, 0), S(0, 0) };
-    Score PiecesOnOneSide[5] = { S(0, 0), S(0, 0), S(0, 0), S(0, 0), S(0, 0) };
-    TUNE(SetRange(-200, 200),HollowCannon, CentralKnight, BottomCannon, AttackedHollowCannon, AttackedCannonWithCentralKnight, AttackedBottomCannon, ProtectedHollowCannon,
-        ProtectedCannonWithCentralKnight, ProtectedBottomCannon, RookOnOpenFile, PiecesOnOneSide);
+    Score RookOnOpenFile[2] = { S(7, 10), S(3, 16) };
+    Score PiecesOnOneSide[5] = { S(-3, 5), S(-13, 36), S(18, 26), S(9, 26), S(10, -4) };
+    TUNE(SetRange(-150, 150),HollowCannon, CentralKnight, BottomCannon, AttackedHollowCannon, AttackedCannonWithCentralKnight, AttackedBottomCannon, ProtectedHollowCannon,
+        ProtectedCannonWithCentralKnight, ProtectedBottomCannon);
 
     // Polynomial material imbalance parameters
 
@@ -259,7 +259,7 @@ namespace {
                 int blocker = popcount(between_bb(s, ksq) & pos.pieces()) - 1;
                 const Bitboard originalAdvisor = square_bb(SQ_D0) | square_bb(SQ_D9) | square_bb(SQ_F0) | square_bb(SQ_F9);
                 Bitboard advisorBB = pos.pieces(Them, ADVISOR);
-                bool attackedCannon = !(attackedBy[Them][ALL_PIECES] & s & (~attackedBy[Us][ALL_PIECES])) || attackedBy[Them][PAWN] & s;
+                bool attackedCannon = (attackedBy[Them][ALL_PIECES] & s & (~attackedBy[Us][ALL_PIECES])) || attackedBy[Them][PAWN] & s;
                 bool protectedCannon = attackedBy[Us][PAWN] & s;
                 if (file_of(s) == FILE_E && (ksq == SQ_E0 || ksq == SQ_E9) && popcount(originalAdvisor & advisorBB) == 2) {
                     if (!blocker) { // 空头炮
@@ -313,7 +313,7 @@ namespace {
         constexpr Bitboard crossed = (Us == WHITE ? (Rank5BB | Rank6BB | Rank7BB | Rank8BB | Rank9BB) : (Rank0BB | Rank1BB | Rank2BB | Rank3BB | Rank4BB));
         constexpr Bitboard left = (FileABB | FileBBB | FileCBB | FileDBB);
         constexpr Bitboard right = (FileFBB | FileGBB | FileHBB | FileIBB);
-        // 三子归边
+        // 多子归边
         for (int i = 0; i <= 1; i++) {
             Bitboard side = (i == 0 ? left : right);
             Bitboard strongPieces = pos.pieces(Us, ROOK) | pos.pieces(Us, KNIGHT) | pos.pieces(Us, CANNON);
