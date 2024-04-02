@@ -116,21 +116,21 @@ using namespace Trace;
 namespace {
 
 #define S(mg, eg) make_score(mg, eg)
-    Score HollowCannon = S(85, 91);
-    Score CentralKnight = S(50, 53);
-    Score BottomCannon = S(18, 8);
-    Score AdvisorBishopPair = S(24, -43);
-    Score CrossedPawn[6] = {
+    constexpr Score HollowCannon = S(85, 91);
+    constexpr Score CentralKnight = S(50, 53);
+    constexpr Score BottomCannon = S(18, 8);
+    constexpr Score AdvisorBishopPair = S(24, -43);
+    constexpr Score CrossedPawn[6] = {
         S(-58, -7), S(19, 0), S(11, -11), S(-23, 6), S(-11, -7), S(-17, -13)
     };
-    Score ConnectedPawn = S(5, -5);
-    Score RookOnOpenFile[2] = { S(7, 10), S(3, 16) };
-    Score PiecesOnOneSide[5] = { S(-3, 5), S(-13, 36), S(18, 26), S(9, 26), S(10, -4) };
+    constexpr Score ConnectedPawn = S(5, -5);
+    constexpr Score RookOnOpenFile[2] = { S(7, 10), S(3, 16) };
+    constexpr Score PiecesOnOneSide[5] = { S(-3, 5), S(-13, 36), S(18, 26), S(9, 26), S(10, -4) };
 
     // Polynomial material imbalance parameters
 
     // One Score parameter for each pair (our piece, another of our pieces)
-    Score QuadraticOurs[][PIECE_TYPE_NB] = {
+    constexpr Score QuadraticOurs[][PIECE_TYPE_NB] = {
         // OUR PIECE 2
         // rook   advisor  cannon   pawn     knight    bishop
         {S(71, 3)                                             }, // Rook
@@ -142,7 +142,7 @@ namespace {
     };
 
     // One Score parameter for each pair (our piece, their piece)
-    Score QuadraticTheirs[][PIECE_TYPE_NB] = {
+    constexpr Score QuadraticTheirs[][PIECE_TYPE_NB] = {
         // THEIR PIECE
         // rook   advisor  cannon   pawn     knight    bishop
         {S(-35, -46)                                           }, // Rook
@@ -152,7 +152,7 @@ namespace {
         {S(-37, 17), S(14, -86), S(38, -24), S(67, 43), S(-21, -42) }, // Knight
         {S(72, 38), S(6, -79), S(24, -2), S(48, 30), S(30, 14), S(-51, 35) }  // Bishop
     };
-    Score mobilityBonus[PIECE_TYPE_NB][2] = {
+    constexpr Score mobilityBonus[PIECE_TYPE_NB][2] = {
         {}, // NO_PIECE_TYPE
         {S(7, 11), S(-18, -28)}, // ROOK
         {S(8, 4), S(-3, -13)}, // ADVISOR
