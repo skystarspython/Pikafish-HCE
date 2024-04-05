@@ -128,7 +128,7 @@ namespace {
     Score RookOnOpenFile[2] = { S(7, 10), S(3, 16) };
     Score MinorBehindPawn = S(5, -5);
     constexpr Score PiecesOnOneSide[5] = { S(-3, 5), S(-13, 36), S(18, 26), S(9, 26), S(10, -4) };
-    constexpr Score mobilityBonus[PIECE_TYPE_NB][2] = {
+    Score mobilityBonus[PIECE_TYPE_NB][2] = {
         {}, // NO_PIECE_TYPE
         {S(700, 1100), S(-1800, -2800)}, // ROOK
         {S(800, 400), S(-300, -1300)}, // ADVISOR
