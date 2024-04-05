@@ -29,6 +29,7 @@
 #include "position.h"
 #include "search.h"
 #include "thread_win32_osx.h"
+#include "material.h"
 
 namespace Stockfish {
 
@@ -55,6 +56,7 @@ public:
   void wait_for_search_finished();
   size_t id() const { return idx; }
 
+  Material::Table materialTable;
   size_t pvIdx, pvLast;
   RunningAverage complexityAverage;
   std::atomic<uint64_t> nodes, tbHits, bestMoveChanges;

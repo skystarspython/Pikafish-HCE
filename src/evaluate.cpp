@@ -32,6 +32,7 @@
 #include "misc.h"
 #include "thread.h"
 #include "uci.h"
+#include "material.h"
 
 using namespace std;
 
@@ -126,32 +127,6 @@ namespace {
     constexpr Score ConnectedPawn = S(5, -5);
     constexpr Score RookOnOpenFile[2] = { S(7, 10), S(3, 16) };
     constexpr Score PiecesOnOneSide[5] = { S(-3, 5), S(-13, 36), S(18, 26), S(9, 26), S(10, -4) };
-
-    // Polynomial material imbalance parameters
-
-    // One Score parameter for each pair (our piece, another of our pieces)
-    constexpr Score QuadraticOurs[][PIECE_TYPE_NB] = {
-        // OUR PIECE 2
-        // rook   advisor  cannon   pawn     knight    bishop
-        {S(71, 3)                                             }, // Rook
-        {S(24, 74), S(44, -67)                                }, // Advisor
-        {S(48, 72), S(33, 62), S(-5, -63)                     }, // Cannon      OUR PIECE 1
-        {S(75, -14), S(31, 44), S(-3, 28), S(-11, 11)         }, // Pawn
-        {S(-92, 53), S(27, -9), S(-3, 234), S(44, 88), S(-30, -29)}, // Knight
-        {S(54, 104), S(175, -103), S(106, -64), S(43, -113), S(24, 6), S(2, -59)}  // Bishop
-    };
-
-    // One Score parameter for each pair (our piece, their piece)
-    constexpr Score QuadraticTheirs[][PIECE_TYPE_NB] = {
-        // THEIR PIECE
-        // rook   advisor  cannon   pawn     knight    bishop
-        {S(-35, -46)                                           }, // Rook
-        {S(-92, 32), S(138, -7)                                }, // Advisor
-        {S(-83, 13), S(-41, 43), S(20, 28)                     }, // Cannon      OUR PIECE
-        {S(-2, 13), S(-57, -118), S(-18, 121), S(70, -58)      }, // Pawn
-        {S(-37, 17), S(14, -86), S(38, -24), S(67, 43), S(-21, -42) }, // Knight
-        {S(72, 38), S(6, -79), S(24, -2), S(48, 30), S(30, 14), S(-51, 35) }  // Bishop
-    };
     constexpr Score mobilityBonus[PIECE_TYPE_NB][2] = {
         {}, // NO_PIECE_TYPE
         {S(7, 11), S(-18, -28)}, // ROOK
@@ -177,10 +152,10 @@ namespace {
         template<Color Us> void initialize();
         template<Color Us, PieceType Pt> Score pieces();
         template<Color Us> Score threat();
-        template<Color Us> Score imbalance();
         Value winnable(Score score) const;
 
         const Position& pos;
+        Material::Entry* me;
 
         // attackedBy[color][piece type] is a bitboard representing all squares
         // attacked by a given color and piece type. Special "piece types" which
@@ -304,41 +279,6 @@ namespace {
         return score;
     }
 
-    /// imbalance() calculates the imbalance by comparing the piece count of each
-    /// piece type for both colors.
-
-    template<Tracing T> template<Color Us>
-    Score Evaluation<T>::imbalance() {
-
-        const int pieceCount[COLOR_NB][PIECE_TYPE_NB] = {
-        { pos.count<ROOK>(WHITE), pos.count<ADVISOR>(WHITE), pos.count<CANNON>(WHITE),
-          pos.count<PAWN>(WHITE), pos.count<KNIGHT >(WHITE), pos.count<BISHOP>(WHITE) },
-        { pos.count<ROOK>(BLACK), pos.count<ADVISOR>(BLACK), pos.count<CANNON>(BLACK),
-          pos.count<PAWN>(BLACK), pos.count<KNIGHT >(BLACK), pos.count<BISHOP>(BLACK) }
-        };
-
-        constexpr Color Them = ~Us;
-
-        Score bonus = SCORE_ZERO;
-
-        // Second-degree polynomial material imbalance, by Tord Romstad
-        for (int pt1 = NO_PIECE_TYPE; pt1 < BISHOP; ++pt1)
-        {
-            if (!pieceCount[Us][pt1])
-                continue;
-
-            int v = QuadraticOurs[pt1][pt1] * pieceCount[Us][pt1];
-
-            for (int pt2 = NO_PIECE_TYPE; pt2 < pt1; ++pt2)
-                v += QuadraticOurs[pt1][pt2] * pieceCount[Us][pt2]
-                + QuadraticTheirs[pt1][pt2] * pieceCount[Them][pt2];
-
-            bonus += pieceCount[Us][pt1] * v;
-        }
-
-        return bonus;
-    }
-
 
     // Evaluation::winnable() adjusts the midgame and endgame score components, based on
     // the known attacking/defending status of the players. The final value is derived
@@ -346,9 +286,7 @@ namespace {
 
     template<Tracing T>
     Value Evaluation<T>::winnable(Score score) const {
-        const int MidgameLimit = 15258, EndgameLimit = 3915;
-        Value sum = pos.material_sum();
-        int gamePhase = (((int)sum - EndgameLimit) * 128) / (MidgameLimit - EndgameLimit);
+        int gamePhase = me->game_phase();
         Value mg = mg_value(score), eg = eg_value(score);
         Value v = mg * int(gamePhase)
             + eg * int(128 - gamePhase);
@@ -364,11 +302,16 @@ namespace {
     template<Tracing T>
     Value Evaluation<T>::value() {
 
-        Score score = pos.psq_score() + (imbalance<WHITE>() - imbalance<BLACK>()) / 16;
+        assert(!pos.checkers());
+
+        // Probe the material hash table
+        me = Material::probe(pos);
+
+        Score score = pos.psq_score() + me->imbalance();
 
         if constexpr (T) {
             Trace::add(MATERIAL, pos.psq_score());
-            Trace::add(IMBALANCE, (imbalance<WHITE>() - imbalance<BLACK>()) / 16);
+            Trace::add(IMBALANCE, me->imbalance());
         }
 
         // Main evaluation begins here

@@ -39,6 +39,7 @@ namespace Stockfish {
 struct StateInfo {
 
   // Copied when making a move
+  Key    materialKey;
   Value   material[COLOR_NB];
   int16_t check10[COLOR_NB];
   int     rule60;
@@ -137,6 +138,7 @@ public:
   // Accessing hash keys
   Key key() const;
   Key key_after(Move m) const;
+  Key material_key() const;
 
   // Other properties of the position
   Color side_to_move() const;
@@ -290,6 +292,10 @@ inline Bitboard Position::check_squares(PieceType pt) const {
 
 inline Key Position::key() const {
   return adjust_key60<false>(st->key);
+}
+
+inline Key Position::material_key() const {
+    return st->materialKey;
 }
 
 template<bool AfterMove>

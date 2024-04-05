@@ -198,7 +198,7 @@ void Position::set_check_info(StateInfo* si) const {
 
 void Position::set_state(StateInfo* si) const {
 
-  si->key = 0;
+  si->key = si->materialKey = 0;
   si->material[WHITE] = si->material[BLACK] = VALUE_ZERO;
   si->checkersBB = checkers_to(~sideToMove, square<KING>(sideToMove));
   si->move = MOVE_NONE;
@@ -217,6 +217,10 @@ void Position::set_state(StateInfo* si) const {
 
   if (sideToMove == BLACK)
       si->key ^= Zobrist::side;
+
+  for (Piece pc : Pieces)
+      for (int cnt = 0; cnt < pieceCount[pc]; ++cnt)
+          si->materialKey ^= Zobrist::psq[pc][cnt];
 }
 
 
@@ -469,6 +473,8 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
 
       // Update hash key
       k ^= Zobrist::psq[captured][capsq];
+      st->materialKey ^= Zobrist::psq[captured][pieceCount[captured]];
+      prefetch(thisThread->materialTable[st->materialKey]);
 
       // Reset rule 60 counter
       st->check10[WHITE] = st->check10[BLACK] = st->rule60 = 0;
