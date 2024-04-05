@@ -32,6 +32,7 @@
 #include "misc.h"
 #include "thread.h"
 #include "uci.h"
+#include "material.h"
 
 using namespace std;
 
@@ -116,51 +117,18 @@ using namespace Trace;
 namespace {
 
 #define S(mg, eg) make_score(mg, eg)
-    Score HollowCannon = S(85, 91);
-    Score CentralKnight = S(50, 53);
-    Score BottomCannon = S(18, 8);
-    Score AdvisorBishopPair = S(24, -43);
-    Score CrossedPawn[6] = {
+    constexpr Score HollowCannon = S(85, 91);
+    constexpr Score CentralKnight = S(50, 53);
+    constexpr Score BottomCannon = S(18, 8);
+    constexpr Score AdvisorBishopPair = S(24, -43);
+    constexpr Score CrossedPawn[6] = {
         S(-58, -7), S(19, 0), S(11, -11), S(-23, 6), S(-11, -7), S(-17, -13)
     };
-    Score ConnectedPawn = S(5, -5);
-    Score AttackedHollowCannon = S(0, 0);
-    Score AttackedCannonWithCentralKnight = S(0, 0);
-    Score AttackedBottomCannon = S(0, 0);
-    Score ProtectedHollowCannon = S(0, 0);
-    Score ProtectedCannonWithCentralKnight = S(0, 0);
-    Score ProtectedBottomCannon = S(0, 0);
+    constexpr Score ConnectedPawn = S(5, -5);
     Score RookOnOpenFile[2] = { S(7, 10), S(3, 16) };
-    Score PiecesOnOneSide[5] = { S(-3, 5), S(-13, 36), S(18, 26), S(9, 26), S(10, -4) };
-    TUNE(SetRange(-150, 150),HollowCannon, CentralKnight, BottomCannon, AttackedHollowCannon, AttackedCannonWithCentralKnight, AttackedBottomCannon, ProtectedHollowCannon,
-        ProtectedCannonWithCentralKnight, ProtectedBottomCannon);
-
-    // Polynomial material imbalance parameters
-
-    // One Score parameter for each pair (our piece, another of our pieces)
-    Score QuadraticOurs[][PIECE_TYPE_NB] = {
-        // OUR PIECE 2
-        // rook   advisor  cannon   pawn     knight    bishop
-        {S(71, 3)                                             }, // Rook
-        {S(24, 74), S(44, -67)                                }, // Advisor
-        {S(48, 72), S(33, 62), S(-5, -63)                     }, // Cannon      OUR PIECE 1
-        {S(75, -14), S(31, 44), S(-3, 28), S(-11, 11)         }, // Pawn
-        {S(-92, 53), S(27, -9), S(-3, 234), S(44, 88), S(-30, -29)}, // Knight
-        {S(54, 104), S(175, -103), S(106, -64), S(43, -113), S(24, 6), S(2, -59)}  // Bishop
-    };
-
-    // One Score parameter for each pair (our piece, their piece)
-    Score QuadraticTheirs[][PIECE_TYPE_NB] = {
-        // THEIR PIECE
-        // rook   advisor  cannon   pawn     knight    bishop
-        {S(-35, -46)                                           }, // Rook
-        {S(-92, 32), S(138, -7)                                }, // Advisor
-        {S(-83, 13), S(-41, 43), S(20, 28)                     }, // Cannon      OUR PIECE
-        {S(-2, 13), S(-57, -118), S(-18, 121), S(70, -58)      }, // Pawn
-        {S(-37, 17), S(14, -86), S(38, -24), S(67, 43), S(-21, -42) }, // Knight
-        {S(72, 38), S(6, -79), S(24, -2), S(48, 30), S(30, 14), S(-51, 35) }  // Bishop
-    };
-    Score mobilityBonus[PIECE_TYPE_NB][2] = {
+    Score MinorBehindPawn = S(5, -5);
+    constexpr Score PiecesOnOneSide[5] = { S(-3, 5), S(-13, 36), S(18, 26), S(9, 26), S(10, -4) };
+    constexpr Score mobilityBonus[PIECE_TYPE_NB][2] = {
         {}, // NO_PIECE_TYPE
         {S(7, 11), S(-18, -28)}, // ROOK
         {S(8, 4), S(-3, -13)}, // ADVISOR
@@ -169,6 +137,7 @@ namespace {
         {S(11, 8), S(-3, -27)}, // KNIGHT
         {S(5, 4), S(-2, -27)}, // BISHOP
     };
+    TUNE(Range(-60,60),RookOnOpenFile,MinorBehindPawn);
 #undef S
 
     // Evaluation class computes and stores attacks tables and other working data
@@ -185,10 +154,10 @@ namespace {
         template<Color Us> void initialize();
         template<Color Us, PieceType Pt> Score pieces();
         template<Color Us> Score threat();
-        template<Color Us> Score imbalance();
         Value winnable(Score score) const;
 
         const Position& pos;
+        Material::Entry* me;
 
         // attackedBy[color][piece type] is a bitboard representing all squares
         // attacked by a given color and piece type. Special "piece types" which
@@ -259,38 +228,29 @@ namespace {
                 int blocker = popcount(between_bb(s, ksq) & pos.pieces()) - 1;
                 const Bitboard originalAdvisor = square_bb(SQ_D0) | square_bb(SQ_D9) | square_bb(SQ_F0) | square_bb(SQ_F9);
                 Bitboard advisorBB = pos.pieces(Them, ADVISOR);
-                bool attackedCannon = (attackedBy[Them][ALL_PIECES] & s & (~attackedBy[Us][ALL_PIECES])) || attackedBy[Them][PAWN] & s;
-                bool protectedCannon = attackedBy[Us][PAWN] & s;
                 if (file_of(s) == FILE_E && (ksq == SQ_E0 || ksq == SQ_E9) && popcount(originalAdvisor & advisorBB) == 2) {
                     if (!blocker) { // 空头炮
                         score += HollowCannon;
-                        if (attackedCannon)
-                            score += AttackedHollowCannon;
-                        else if (protectedCannon)
-                            score += ProtectedHollowCannon;
                     }
                     if (blocker == 2 && (between_bb(s, ksq) & pos.pieces(Them, KNIGHT) & attackedBy[Them][KING])) { // 炮镇窝心马
                         score += CentralKnight;
-                        if (attackedCannon)
-                            score += AttackedCannonWithCentralKnight;
-                        else if (protectedCannon)
-                            score += ProtectedCannonWithCentralKnight;
                     }
                 }
                 Rank enemyBottom = (Us == WHITE ? RANK_9 : RANK_0);
                 Square enemyCenter = (Us == WHITE ? SQ_E8 : SQ_E1);
                 if (rank_of(s) == enemyBottom && !blocker && (ksq == SQ_E0 || ksq == SQ_E9) && (pos.pieces(Them) & enemyCenter)) { // 沉底炮
                     score += BottomCannon;
-                    if (attackedCannon)
-                        score += AttackedBottomCannon;
-                    else if (protectedCannon)
-                        score += ProtectedBottomCannon;
                 }
-                if constexpr (Pt == ROOK)
-                {
-                    if (pos.is_on_semiopen_file(Us, s)) {
-                        score += RookOnOpenFile[pos.is_on_semiopen_file(Them, s)];
-                    }
+            }
+            if (Pt == BISHOP || Pt == KNIGHT) {
+                // Bonus for a bishop or knight shielded by pawn
+                if (shift<Down>(pos.pieces(PAWN)) & s)
+                    score += MinorBehindPawn;
+            }
+            if constexpr (Pt == ROOK)
+            {
+                if (pos.is_on_semiopen_file(Us, s)) {
+                    score += RookOnOpenFile[pos.is_on_semiopen_file(Them, s)];
                 }
             }
         }
@@ -326,41 +286,6 @@ namespace {
         return score;
     }
 
-    /// imbalance() calculates the imbalance by comparing the piece count of each
-    /// piece type for both colors.
-
-    template<Tracing T> template<Color Us>
-    Score Evaluation<T>::imbalance() {
-
-        const int pieceCount[COLOR_NB][PIECE_TYPE_NB] = {
-        { pos.count<ROOK>(WHITE), pos.count<ADVISOR>(WHITE), pos.count<CANNON>(WHITE),
-          pos.count<PAWN>(WHITE), pos.count<KNIGHT >(WHITE), pos.count<BISHOP>(WHITE) },
-        { pos.count<ROOK>(BLACK), pos.count<ADVISOR>(BLACK), pos.count<CANNON>(BLACK),
-          pos.count<PAWN>(BLACK), pos.count<KNIGHT >(BLACK), pos.count<BISHOP>(BLACK) }
-        };
-
-        constexpr Color Them = ~Us;
-
-        Score bonus = SCORE_ZERO;
-
-        // Second-degree polynomial material imbalance, by Tord Romstad
-        for (int pt1 = NO_PIECE_TYPE; pt1 < BISHOP; ++pt1)
-        {
-            if (!pieceCount[Us][pt1])
-                continue;
-
-            int v = QuadraticOurs[pt1][pt1] * pieceCount[Us][pt1];
-
-            for (int pt2 = NO_PIECE_TYPE; pt2 < pt1; ++pt2)
-                v += QuadraticOurs[pt1][pt2] * pieceCount[Us][pt2]
-                + QuadraticTheirs[pt1][pt2] * pieceCount[Them][pt2];
-
-            bonus += pieceCount[Us][pt1] * v;
-        }
-
-        return bonus;
-    }
-
 
     // Evaluation::winnable() adjusts the midgame and endgame score components, based on
     // the known attacking/defending status of the players. The final value is derived
@@ -368,9 +293,7 @@ namespace {
 
     template<Tracing T>
     Value Evaluation<T>::winnable(Score score) const {
-        const int MidgameLimit = 15258, EndgameLimit = 3915;
-        Value sum = pos.material_sum();
-        int gamePhase = (((int)sum - EndgameLimit) * 128) / (MidgameLimit - EndgameLimit);
+        int gamePhase = me->game_phase();
         Value mg = mg_value(score), eg = eg_value(score);
         Value v = mg * int(gamePhase)
             + eg * int(128 - gamePhase);
@@ -386,11 +309,16 @@ namespace {
     template<Tracing T>
     Value Evaluation<T>::value() {
 
-        Score score = pos.psq_score() + (imbalance<WHITE>() - imbalance<BLACK>()) / 16;
+        assert(!pos.checkers());
+
+        // Probe the material hash table
+        me = Material::probe(pos);
+
+        Score score = pos.psq_score() + me->imbalance();
 
         if constexpr (T) {
             Trace::add(MATERIAL, pos.psq_score());
-            Trace::add(IMBALANCE, (imbalance<WHITE>() - imbalance<BLACK>()) / 16);
+            Trace::add(IMBALANCE, me->imbalance());
         }
 
         // Main evaluation begins here

@@ -33,7 +33,7 @@ auto constexpr S = make_score;
 
 // 'Bonus' contains Piece-Square parameters.
 // Scores are explicit for files A to E, implicitly mirrored for E to I.
-Score Bonus[][RANK_NB][int(FILE_NB) / 2 + 1] = {
+constexpr Score Bonus[][RANK_NB][int(FILE_NB) / 2 + 1] = {
   { },
   { // ROOK
    { S(-218,-132), S(  24,-242), S(-143, -73), S( -31,  -5), S(   7, -45)},
@@ -146,39 +146,6 @@ void init() {
     }
   }
 }
-/*
-TUNE(SetRange(-35, 35), Bonus[ROOK], init);
-TUNE(SetRange(-35, 35), Bonus[CANNON], init);
-TUNE(SetRange(-35, 35), Bonus[KNIGHT], init);
-
-// PAWN TUNE
-TUNE(SetRange(-35, 35), Bonus[PAWN][3], init);
-TUNE(SetRange(-35, 35), Bonus[PAWN][4], init);
-TUNE(SetRange(-35, 35), Bonus[PAWN][5], init);
-TUNE(SetRange(-35, 35), Bonus[PAWN][6], init);
-TUNE(SetRange(-35, 35), Bonus[PAWN][7], init);
-TUNE(SetRange(-35, 35), Bonus[PAWN][8], init);
-TUNE(SetRange(-35, 35), Bonus[PAWN][9], init);
-
-// BISHOP TUNE
-TUNE(SetRange(-35, 35), Bonus[BISHOP][0][2], init);
-TUNE(SetRange(-35, 35), Bonus[BISHOP][2][0], init);
-TUNE(SetRange(-35, 35), Bonus[BISHOP][2][4], init);
-TUNE(SetRange(-35, 35), Bonus[BISHOP][4][2], init);
-
-// ADVISOR TUNE
-TUNE(SetRange(-35, 35), Bonus[ADVISOR][0][3], init);
-TUNE(SetRange(-35, 35), Bonus[ADVISOR][1][4], init);
-TUNE(SetRange(-35, 35), Bonus[ADVISOR][2][3], init);
-
-// KING TUNE
-TUNE(SetRange(-35, 35), Bonus[KING][0][3], init);
-TUNE(SetRange(-35, 35), Bonus[KING][0][4], init);
-TUNE(SetRange(-35, 35), Bonus[KING][1][3], init);
-TUNE(SetRange(-35, 35), Bonus[KING][1][4], init);
-TUNE(SetRange(-35, 35), Bonus[KING][2][3], init);
-TUNE(SetRange(-35, 35), Bonus[KING][2][4], init);
-*/
 } // namespace PSQT
 
 } // namespace Stockfish
