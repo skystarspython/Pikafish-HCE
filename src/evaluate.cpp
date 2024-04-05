@@ -125,8 +125,8 @@ namespace {
         S(-58, -7), S(19, 0), S(11, -11), S(-23, 6), S(-11, -7), S(-17, -13)
     };
     constexpr Score ConnectedPawn = S(5, -5);
-    Score RookOnOpenFile[2] = { S(7, 10), S(3, 16) };
-    Score MinorBehindPawn = S(5, -5);
+    Score RookOnOpenFile[2] = { S(0, 0), S(0, 0) };
+    Score MinorBehindPawn = S(0, 0);
     constexpr Score PiecesOnOneSide[5] = { S(-3, 5), S(-13, 36), S(18, 26), S(9, 26), S(10, -4) };
     Score mobilityBonus[PIECE_TYPE_NB][2] = {
         {}, // NO_PIECE_TYPE
@@ -189,9 +189,6 @@ namespace {
         attackedBy[Us][PAWN] = pawn_attacks_bb<Us>(pos.pieces(Us, PAWN));
         attackedBy[Us][ALL_PIECES] = attackedBy[Us][KING] | attackedBy[Us][PAWN];
         attackedBy2[Us] = attackedBy[Us][KING] & attackedBy[Us][PAWN];
-        // Find our pawns that are on the first two ranks
-        Bitboard b0 = pos.pieces(Us, PAWN) & LowRanks;
-
     }
 
 
@@ -201,6 +198,8 @@ namespace {
     Score Evaluation<T>::pieces() {
 
         constexpr Color Them = ~Us;
+        constexpr Direction Up   = pawn_push(Us);
+        constexpr Direction Down = -Up;
         const Square ksq = pos.square<KING>(Them);
         Bitboard b1 = pos.pieces(Us, Pt);
         Bitboard b;

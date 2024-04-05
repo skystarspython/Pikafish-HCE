@@ -519,6 +519,10 @@ constexpr Rank rank_of(Square s) {
   return Rank(s / FILE_NB);
 }
 
+constexpr Direction pawn_push(Color c) {
+  return c == WHITE ? NORTH : SOUTH;
+}
+
 constexpr Square from_sq(Move m) {
   return Square(m >> 7);
 }
