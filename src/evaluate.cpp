@@ -125,16 +125,16 @@ namespace {
         S(-58, -7), S(19, 0), S(11, -11), S(-23, 6), S(-11, -7), S(-17, -13)
     };
     constexpr Score ConnectedPawn = S(5, -5);
-    constexpr Score RookOnOpenFile[2] = { S(3, -1), S(7, 6) };
+    constexpr Score RookOnOpenFile[2] = { S(0, -8), S(14, 16) };
     constexpr Score PiecesOnOneSide[5] = { S(-3, 5), S(-13, 36), S(18, 26), S(9, 26), S(10, -4) };
     Score mobilityBonus[PIECE_TYPE_NB][2] = {
         {}, // NO_PIECE_TYPE
-        {S(651, 1431), S(-1785, -2643)}, // ROOK
-        {S(1728, 750), S(-451, -1324)}, // ADVISOR
-        {S(148, 52), S(-39, 96)}, // CANNON
+        {S(776, -39), S(-2135, -2910)}, // ROOK
+        {S(2309, 734), S(-170, -1261)}, // ADVISOR
+        {S(-100, 470), S(158, 144)}, // CANNON
         {}, // PAWN
-        {S(1645, 1259), S(-114, -3131)}, // KNIGHT
-        {S(1066, 695), S(-119, -2680)}, // BISHOP
+        {S(1779, 1348), S(-254, -3141)}, // KNIGHT
+        {S(1994, 972), S(291, -2789)}, // BISHOP
     };
 #undef S
 
