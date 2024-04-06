@@ -125,16 +125,16 @@ namespace {
         S(-58, -7), S(19, 0), S(11, -11), S(-23, 6), S(-11, -7), S(-17, -13)
     };
     constexpr Score ConnectedPawn = S(5, -5);
-    constexpr Score RookOnOpenFile[2] = { S(7, 10), S(3, 16) };
+    constexpr Score RookOnOpenFile[2] = { S(3, -1), S(7, 6) };
     constexpr Score PiecesOnOneSide[5] = { S(-3, 5), S(-13, 36), S(18, 26), S(9, 26), S(10, -4) };
-    constexpr Score mobilityBonus[PIECE_TYPE_NB][2] = {
+    Score mobilityBonus[PIECE_TYPE_NB][2] = {
         {}, // NO_PIECE_TYPE
-        {S(7, 11), S(-18, -28)}, // ROOK
-        {S(8, 4), S(-3, -13)}, // ADVISOR
-        {S(0, 0), S(-1, 0)}, // CANNON
+        {S(651, 1431), S(-1785, -2643)}, // ROOK
+        {S(1728, 750), S(-451, -1324)}, // ADVISOR
+        {S(148, 52), S(-39, 96)}, // CANNON
         {}, // PAWN
-        {S(11, 8), S(-3, -27)}, // KNIGHT
-        {S(5, 4), S(-2, -27)}, // BISHOP
+        {S(1645, 1259), S(-114, -3131)}, // KNIGHT
+        {S(1066, 695), S(-119, -2680)}, // BISHOP
     };
 #undef S
 
@@ -186,9 +186,6 @@ namespace {
         attackedBy[Us][PAWN] = pawn_attacks_bb<Us>(pos.pieces(Us, PAWN));
         attackedBy[Us][ALL_PIECES] = attackedBy[Us][KING] | attackedBy[Us][PAWN];
         attackedBy2[Us] = attackedBy[Us][KING] & attackedBy[Us][PAWN];
-        // Find our pawns that are on the first two ranks
-        Bitboard b0 = pos.pieces(Us, PAWN) & LowRanks;
-
     }
 
 
@@ -198,6 +195,8 @@ namespace {
     Score Evaluation<T>::pieces() {
 
         constexpr Color Them = ~Us;
+        constexpr Direction Up   = pawn_push(Us);
+        constexpr Direction Down = -Up;
         const Square ksq = pos.square<KING>(Them);
         Bitboard b1 = pos.pieces(Us, Pt);
         Bitboard b;
@@ -220,7 +219,7 @@ namespace {
             attackedBy[Us][ALL_PIECES] |= b;
 
             int mob = popcount(b & ~attackedBy[Them][PAWN]);
-            mobility[Us] += mobilityBonus[Pt][0] * mob + mobilityBonus[Pt][1];
+            mobility[Us] += (mobilityBonus[Pt][0] * mob + mobilityBonus[Pt][1]) / 100;
 
             if constexpr (Pt == CANNON) { // 炮的评估 (~5 Elo)
                 int blocker = popcount(between_bb(s, ksq) & pos.pieces()) - 1;
@@ -239,11 +238,11 @@ namespace {
                 if (rank_of(s) == enemyBottom && !blocker && (ksq == SQ_E0 || ksq == SQ_E9) && (pos.pieces(Them) & enemyCenter)) { // 沉底炮
                     score += BottomCannon;
                 }
-                if constexpr (Pt == ROOK)
-                {
-                    if (pos.is_on_semiopen_file(Us, s)) {
-                        score += RookOnOpenFile[pos.is_on_semiopen_file(Them, s)];
-                    }
+            }
+            if constexpr (Pt == ROOK)
+            {
+                if (pos.is_on_semiopen_file(Us, s)) {
+                    score += RookOnOpenFile[pos.is_on_semiopen_file(Them, s)];
                 }
             }
         }
