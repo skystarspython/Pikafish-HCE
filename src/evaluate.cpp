@@ -125,20 +125,17 @@ namespace {
         S(-58, -7), S(19, 0), S(11, -11), S(-23, 6), S(-11, -7), S(-17, -13)
     };
     constexpr Score ConnectedPawn = S(5, -5);
-    Score RookOnOpenFile[2] = { S(0, 0), S(0, 0) };
-    Score MinorBehindPawn = S(0, 0);
+    constexpr Score RookOnOpenFile[2] = { S(0, -8), S(14, 16) };
     constexpr Score PiecesOnOneSide[5] = { S(-3, 5), S(-13, 36), S(18, 26), S(9, 26), S(10, -4) };
     Score mobilityBonus[PIECE_TYPE_NB][2] = {
         {}, // NO_PIECE_TYPE
-        {S(700, 1100), S(-1800, -2800)}, // ROOK
-        {S(800, 400), S(-300, -1300)}, // ADVISOR
-        {S(0, 0), S(-100, 0)}, // CANNON
+        {S(776, -39), S(-2135, -2910)}, // ROOK
+        {S(2309, 734), S(-170, -1261)}, // ADVISOR
+        {S(-100, 470), S(158, 144)}, // CANNON
         {}, // PAWN
-        {S(1100, 800), S(-300, -2700)}, // KNIGHT
-        {S(500, 400), S(-200, -2700)}, // BISHOP
+        {S(1779, 1348), S(-254, -3141)}, // KNIGHT
+        {S(1994, 972), S(291, -2789)}, // BISHOP
     };
-    TUNE(SetRange(-60,60),RookOnOpenFile,MinorBehindPawn);
-    TUNE(SetRange(-4000,4000),mobilityBonus[1],mobilityBonus[2],mobilityBonus[3],mobilityBonus[5],mobilityBonus[6]);
 #undef S
 
     // Evaluation class computes and stores attacks tables and other working data
@@ -241,11 +238,6 @@ namespace {
                 if (rank_of(s) == enemyBottom && !blocker && (ksq == SQ_E0 || ksq == SQ_E9) && (pos.pieces(Them) & enemyCenter)) { // 沉底炮
                     score += BottomCannon;
                 }
-            }
-            if (Pt == BISHOP || Pt == KNIGHT) {
-                // Bonus for a bishop or knight shielded by pawn
-                if (shift<Down>(pos.pieces(PAWN)) & s)
-                    score += MinorBehindPawn;
             }
             if constexpr (Pt == ROOK)
             {
