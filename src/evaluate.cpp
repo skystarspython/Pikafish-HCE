@@ -121,7 +121,7 @@ namespace {
     constexpr Score CentralKnight = S(50, 53);
     constexpr Score BottomCannon = S(18, 8);
     constexpr Score AdvisorBishopPair = S(24, -43);
-    Score CrossedPawn[6][3] = {
+    Score CrossedPawn[3][6] = {
         { S(-58, -7), S(19, 0), S(11, -11), S(-23, 6), S(-11, -7), S(-17, -13) },
         { S(-58, -7), S(19, 0), S(11, -11), S(-23, 6), S(-11, -7), S(-17, -13) },
         { S(-58, -7), S(19, 0), S(11, -11), S(-23, 6), S(-11, -7), S(-17, -13) }
@@ -264,7 +264,7 @@ namespace {
         // 过河兵
         constexpr Bitboard crossedWithoutBottom = (Us == WHITE ? (Rank5BB | Rank6BB | Rank7BB | Rank8BB) : (Rank1BB | Rank2BB | Rank3BB | Rank4BB)); // 底线不算
         int crossedPawnCnt = popcount(crossedWithoutBottom & pos.pieces(Us, PAWN));
-        score += CrossedPawn[crossedPawnCnt][pos.count<ADVISOR>(Them)];
+        score += CrossedPawn[pos.count<ADVISOR>(Them)][crossedPawnCnt];
         // 牵手兵
         score += ConnectedPawn * popcount(shift<EAST>(pos.pieces(Us, PAWN)) & pos.pieces(Us, PAWN));
         constexpr Bitboard crossed = (Us == WHITE ? (Rank5BB | Rank6BB | Rank7BB | Rank8BB | Rank9BB) : (Rank0BB | Rank1BB | Rank2BB | Rank3BB | Rank4BB));
