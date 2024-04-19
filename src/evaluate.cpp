@@ -121,20 +121,22 @@ namespace {
     constexpr Score CentralKnight = S(50, 53);
     constexpr Score BottomCannon = S(18, 8);
     constexpr Score AdvisorBishopPair = S(24, -43);
-    constexpr Score CrossedPawn[6] = {
-        S(-58, -7), S(19, 0), S(11, -11), S(-23, 6), S(-11, -7), S(-17, -13)
+    constexpr Score CrossedPawn[3][6] = {
+        { S(-56, -40), S(6, 24), S(11, 7), S(-29, 7), S(-9, -1), S(-4, -7) },
+        { S(-68, -35), S(10, 12), S(9, 3), S(-16, 9), S(-14, 0), S(-36, -13) },
+        { S(-79, 5), S(40, -8), S(32, 1), S(-22, 9), S(-20, -16), S(-40, -20) }
     };
     constexpr Score ConnectedPawn = S(5, -5);
     constexpr Score RookOnOpenFile[2] = { S(0, -8), S(14, 16) };
     constexpr Score PiecesOnOneSide[5] = { S(-3, 5), S(-13, 36), S(18, 26), S(9, 26), S(10, -4) };
-    Score mobilityBonus[PIECE_TYPE_NB][2] = {
+    constexpr Score mobilityBonus[PIECE_TYPE_NB][18] = {
         {}, // NO_PIECE_TYPE
-        {S(776, -39), S(-2135, -2910)}, // ROOK
-        {S(2309, 734), S(-170, -1261)}, // ADVISOR
-        {S(-100, 470), S(158, 144)}, // CANNON
+        {S(-2655, -3045), S(423, -2895), S(-1144, -2170), S(155, -3012), S(-1067, -5183), S(1097, -3787), S(2037, -2581), S(2577, -3604), S(3512, -3371), S(3554, -5076), S(5818, -4178), S(6629, -946), S(8410, -3079), S(9004, -1200), S(11081, -3500), S(9035, -1212), S(11433, -3483), S(1686, -4329)}, // ROOK
+        {S(1686, -4329), S(4461, 745), S(4657, 329), S(5853, 1929), S(9140, 275)}, // ADVISOR
+        {S(672, 1629), S(-310, 1438), S(1799, 1728), S(840, 4456), S(115, 3069), S(1085, 3029), S(624, 3532), S(-1894, 3181), S(-1461, 3018), S(-461, 2196), S(-1398, 5107), S(568, 4268), S(-1408, 5591), S(-933, 5727), S(-2136, 6283), S(-478, 7094), S(35, 6741), S(-2309, 6672)}, // CANNON
         {}, // PAWN
-        {S(1779, 1348), S(-254, -3141)}, // KNIGHT
-        {S(1994, 972), S(291, -2789)}, // BISHOP
+        {S(-582, -4894), S(2260, -2360), S(4002, -2435), S(4595, 1090), S(5389, 2949), S(9760, 3209), S(8500, 3453), S(11956, 6472), S(13619, 7657)}, // KNIGHT
+        {S(1692, -2811), S(911, -1898), S(3017, -904), S(7134, 1537), S(9276, -1351)}, // BISHOP
     };
 #undef S
 
@@ -219,9 +221,10 @@ namespace {
             attackedBy[Us][ALL_PIECES] |= b;
 
             int mob = popcount(b & ~attackedBy[Them][PAWN]);
-            mobility[Us] += (mobilityBonus[Pt][0] * mob + mobilityBonus[Pt][1]) / 100;
+            if constexpr (Pt != PAWN)
+                mobility[Us] += mobilityBonus[Pt][mob];
 
-            if constexpr (Pt == CANNON) { // 炮的评估 (~5 Elo)
+            if constexpr (Pt == CANNON) { // 炮的评估
                 int blocker = popcount(between_bb(s, ksq) & pos.pieces()) - 1;
                 const Bitboard originalAdvisor = square_bb(SQ_D0) | square_bb(SQ_D9) | square_bb(SQ_F0) | square_bb(SQ_F9);
                 Bitboard advisorBB = pos.pieces(Them, ADVISOR);
@@ -241,9 +244,8 @@ namespace {
             }
             if constexpr (Pt == ROOK)
             {
-                if (pos.is_on_semiopen_file(Us, s)) {
+                if (pos.is_on_semiopen_file(Us, s))
                     score += RookOnOpenFile[pos.is_on_semiopen_file(Them, s)];
-                }
             }
         }
         return score;
@@ -256,10 +258,10 @@ namespace {
         // 士象全
         if (pos.count<ADVISOR>(Us) + pos.count<BISHOP>(Us) == 4)
             score += AdvisorBishopPair;
-        // 过河兵 (~8.5 Elo)
+        // 过河兵
         constexpr Bitboard crossedWithoutBottom = (Us == WHITE ? (Rank5BB | Rank6BB | Rank7BB | Rank8BB) : (Rank1BB | Rank2BB | Rank3BB | Rank4BB)); // 底线不算
         int crossedPawnCnt = popcount(crossedWithoutBottom & pos.pieces(Us, PAWN));
-        score += CrossedPawn[crossedPawnCnt];
+        score += CrossedPawn[pos.count<ADVISOR>(Them)][crossedPawnCnt];
         // 牵手兵
         score += ConnectedPawn * popcount(shift<EAST>(pos.pieces(Us, PAWN)) & pos.pieces(Us, PAWN));
         constexpr Bitboard crossed = (Us == WHITE ? (Rank5BB | Rank6BB | Rank7BB | Rank8BB | Rank9BB) : (Rank0BB | Rank1BB | Rank2BB | Rank3BB | Rank4BB));
@@ -325,7 +327,7 @@ namespace {
 
         score += threat<WHITE>() - threat<BLACK>();
 
-        score += mobility[WHITE] - mobility[BLACK];
+        score += (mobility[WHITE] - mobility[BLACK]) / 100;
 
         if constexpr (T) {
             Trace::add(THREAT, threat<WHITE>(), threat<BLACK>());
