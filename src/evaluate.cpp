@@ -121,26 +121,23 @@ namespace {
     constexpr Score CentralKnight = S(50, 53);
     constexpr Score BottomCannon = S(18, 8);
     constexpr Score AdvisorBishopPair = S(24, -43);
-    Score CrossedPawn[3][6] = {
-        { S(-58, -7), S(19, 0), S(11, -11), S(-23, 6), S(-11, -7), S(-17, -13) },
-        { S(-58, -7), S(19, 0), S(11, -11), S(-23, 6), S(-11, -7), S(-17, -13) },
-        { S(-58, -7), S(19, 0), S(11, -11), S(-23, 6), S(-11, -7), S(-17, -13) }
+    constexpr Score CrossedPawn[3][6] = {
+        { S(-56, -40), S(6, 24), S(11, 7), S(-29, 7), S(-9, -1), S(-4, -7) },
+        { S(-68, -35), S(10, 12), S(9, 3), S(-16, 9), S(-14, 0), S(-36, -13) },
+        { S(-79, 5), S(40, -8), S(32, 1), S(-22, 9), S(-20, -16), S(-40, -20) }
     };
     constexpr Score ConnectedPawn = S(5, -5);
     constexpr Score RookOnOpenFile[2] = { S(0, -8), S(14, 16) };
     constexpr Score PiecesOnOneSide[5] = { S(-3, 5), S(-13, 36), S(18, 26), S(9, 26), S(10, -4) };
-    Score mobilityBonus[PIECE_TYPE_NB][18] = {
+    constexpr Score mobilityBonus[PIECE_TYPE_NB][18] = {
         {}, // NO_PIECE_TYPE
-        {S(-2135, -2910), S(-1359, -2949), S(-583, -2988), S(193, -3027), S(969, -3066), S(1745, -3105), S(2521, -3144), S(3297, -3183), S(4073, -3222), S(4849, -3261), S(5625, -3300), S(6401, -3339), S(7177, -3378), S(7953, -3417), S(8729, -3456), S(9505, -3495), S(10281, -3534), S(11057, -3573)}, // ROOK
-        {S(-170, -1261), S(2139, -527), S(4448, 207), S(6757, 941), S(9066, 1675)}, // ADVISOR
-        {S(158, 144), S(58, 614), S(-42, 1084), S(-142, 1554), S(-242, 2024), S(-342, 2494), S(-442, 2964), S(-542, 3434), S(-642, 3904), S(-742, 4374), S(-842, 4844), S(-942, 5314), S(-1042, 5784), S(-1142, 6254), S(-1242, 6724), S(-1342, 7194), S(-1442, 7664), S(-1542, 8134)}, // CANNON
+        {S(-2655, -3045), S(423, -2895), S(-1144, -2170), S(155, -3012), S(-1067, -5183), S(1097, -3787), S(2037, -2581), S(2577, -3604), S(3512, -3371), S(3554, -5076), S(5818, -4178), S(6629, -946), S(8410, -3079), S(9004, -1200), S(11081, -3500), S(9035, -1212), S(11433, -3483), S(1686, -4329)}, // ROOK
+        {S(1686, -4329), S(4461, 745), S(4657, 329), S(5853, 1929), S(9140, 275)}, // ADVISOR
+        {S(672, 1629), S(-310, 1438), S(1799, 1728), S(840, 4456), S(115, 3069), S(1085, 3029), S(624, 3532), S(-1894, 3181), S(-1461, 3018), S(-461, 2196), S(-1398, 5107), S(568, 4268), S(-1408, 5591), S(-933, 5727), S(-2136, 6283), S(-478, 7094), S(35, 6741), S(-2309, 6672)}, // CANNON
         {}, // PAWN
-        {S(-254, -3141), S(1525, -1793), S(3304, -445), S(5083, 903), S(6862, 2251), S(8641, 3599), S(10420, 4947), S(12199, 6295), S(13978, 7643)}, // KNIGHT
-        {S(291, -2789), S(2285, -1817), S(4279, -845), S(6273, 127), S(8267, 1099)}, // BISHOP
+        {S(-582, -4894), S(2260, -2360), S(4002, -2435), S(4595, 1090), S(5389, 2949), S(9760, 3209), S(8500, 3453), S(11956, 6472), S(13619, 7657)}, // KNIGHT
+        {S(1692, -2811), S(911, -1898), S(3017, -904), S(7134, 1537), S(9276, -1351)}, // BISHOP
     };
-    TUNE(SetRange(-150,150),CrossedPawn);
-    TUNE(SetRange(-15000, 15000),mobilityBonus[1],mobilityBonus[2][0],mobilityBonus[2][1],mobilityBonus[2][2],mobilityBonus[2][3],mobilityBonus[2][4],mobilityBonus[3],mobilityBonus[5][0],mobilityBonus[5][1],mobilityBonus[5][2],mobilityBonus[5][3],mobilityBonus[5][4],mobilityBonus[5][5],mobilityBonus[5][6],mobilityBonus[5][7],mobilityBonus[5][8]
-    ,mobilityBonus[6][0],mobilityBonus[6][1],mobilityBonus[6][2],mobilityBonus[6][3],mobilityBonus[6][4]);
 #undef S
 
     // Evaluation class computes and stores attacks tables and other working data
@@ -227,7 +224,7 @@ namespace {
             if constexpr (Pt != PAWN)
                 mobility[Us] += mobilityBonus[Pt][mob];
 
-            if constexpr (Pt == CANNON) { // 炮的评估 (~5 Elo)
+            if constexpr (Pt == CANNON) { // 炮的评估
                 int blocker = popcount(between_bb(s, ksq) & pos.pieces()) - 1;
                 const Bitboard originalAdvisor = square_bb(SQ_D0) | square_bb(SQ_D9) | square_bb(SQ_F0) | square_bb(SQ_F9);
                 Bitboard advisorBB = pos.pieces(Them, ADVISOR);
