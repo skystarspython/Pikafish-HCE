@@ -138,6 +138,114 @@ namespace {
         {S(-582, -4894), S(2260, -2360), S(4002, -2435), S(4595, 1090), S(5389, 2949), S(9760, 3209), S(8500, 3453), S(11956, 6472), S(13619, 7657)}, // KNIGHT
         {S(1692, -2811), S(911, -1898), S(3017, -904), S(7134, 1537), S(9276, -1351)}, // BISHOP
     };
+
+            // One Score parameter for each pair (our piece, another of our pieces)
+        Score QuadraticOurs[][PIECE_TYPE_NB] = {
+            // OUR PIECE 2
+            // rook   advisor  cannon   pawn     knight    bishop  advisor pair  bishop pair
+            {S(71, 3)                                                                       }, // Rook
+            {S(24, 74), S(44, -67)                                                          }, // Advisor
+            {S(48, 72), S(33, 62), S(-5, -63)                                               }, // Cannon      OUR PIECE 1
+            {S(75, -14), S(31, 44), S(-3, 28), S(-11, 11)                                   }, // Pawn
+            {S(-92, 53), S(27, -9), S(-3, 234), S(44, 88), S(-30, -29)                      }, // Knight
+            {S(54, 104), S(175, -103), S(106, -64), S(43, -113), S(24, 6), S(2, -59)        },  // Bishop
+            {S(0,0), S(0,0), S(0,0), S(0,0), S(0,0), S(0,0), S(0,0)}, // Advisor pair
+            {S(0,0), S(0,0), S(0,0), S(0,0), S(0,0), S(0,0), S(0,0), S(0,0)} // Bishop pair
+        };
+
+        // One Score parameter for each pair (our piece, their piece)
+        Score QuadraticTheirs[][PIECE_TYPE_NB] = {
+            // THEIR PIECE
+            // rook   advisor  cannon   pawn     knight    bishop
+            {S(-35, -46)                                           }, // Rook
+            {S(-92, 32), S(138, -7)                                }, // Advisor
+            {S(-83, 13), S(-41, 43), S(20, 28)                     }, // Cannon      OUR PIECE
+            {S(-2, 13), S(-57, -118), S(-18, 121), S(70, -58)      }, // Pawn
+            {S(-37, 17), S(14, -86), S(38, -24), S(67, 43), S(-21, -42) }, // Knight
+            {S(72, 38), S(6, -79), S(24, -2), S(48, 30), S(30, 14), S(-51, 35) },  // Bishop
+            {S(0,0), S(0,0), S(0,0), S(0,0), S(0,0), S(0,0), S(0,0)}, // Advisor pair
+            {S(0,0), S(0,0), S(0,0), S(0,0), S(0,0), S(0,0), S(0,0), S(0,0)} // Bishop pair
+        };
+
+TUNE(
+    SetRange(-300,300),
+    QuadraticOurs[0][0], // Rook vs. rook
+    QuadraticOurs[1][0], // Advisor vs. rook
+    QuadraticOurs[1][1], // Advisor vs. advisor
+    QuadraticOurs[2][0], // Cannon vs. rook
+    QuadraticOurs[2][1], // Cannon vs. advisor
+    QuadraticOurs[2][2], // Cannon vs. cannon
+    QuadraticOurs[3][0], // Pawn vs. rook
+    QuadraticOurs[3][1], // Pawn vs. advisor
+    QuadraticOurs[3][2], // Pawn vs. cannon
+    QuadraticOurs[3][3], // Pawn vs. pawn
+    QuadraticOurs[4][0], // Knight vs. rook
+    QuadraticOurs[4][1], // Knight vs. advisor
+    QuadraticOurs[4][2], // Knight vs. cannon
+    QuadraticOurs[4][3], // Knight vs. pawn
+    QuadraticOurs[4][4], // Knight vs. knight
+    QuadraticOurs[5][0], // Bishop vs. rook
+    QuadraticOurs[5][1], // Bishop vs. advisor
+    QuadraticOurs[5][2], // Bishop vs. cannon
+    QuadraticOurs[5][3], // Bishop vs. pawn
+    QuadraticOurs[5][4], // Bishop vs. knight
+    QuadraticOurs[5][5], // Bishop vs. bishop
+    QuadraticOurs[6][0], // Advisor pair vs. rook
+    QuadraticOurs[6][1], // Advisor pair vs. advisor
+    QuadraticOurs[6][2], // Advisor pair vs. cannon
+    QuadraticOurs[6][3], // Advisor pair vs. pawn
+    QuadraticOurs[6][4], // Advisor pair vs. knight
+    QuadraticOurs[6][5], // Advisor pair vs. bishop
+    QuadraticOurs[6][6], // Advisor pair vs. advisor pair
+    QuadraticOurs[7][0], // Bishop pair vs. rook
+    QuadraticOurs[7][1], // Bishop pair vs. advisor
+    QuadraticOurs[7][2], // Bishop pair vs. cannon
+    QuadraticOurs[7][3], // Bishop pair vs. pawn
+    QuadraticOurs[7][4], // Bishop pair vs. knight
+    QuadraticOurs[7][5], // Bishop pair vs. bishop
+    QuadraticOurs[7][6], // Bishop pair vs. advisor pair
+    QuadraticOurs[7][7]  // Bishop pair vs. bishop pair
+);
+
+TUNE(
+    SetRange(-300,300),
+    QuadraticTheirs[0][0], // Rook vs. rook
+    QuadraticTheirs[1][0], // Advisor vs. rook
+    QuadraticTheirs[1][1], // Advisor vs. advisor
+    QuadraticTheirs[2][0], // Cannon vs. rook
+    QuadraticTheirs[2][1], // Cannon vs. advisor
+    QuadraticTheirs[2][2], // Cannon vs. cannon
+    QuadraticTheirs[3][0], // Pawn vs. rook
+    QuadraticTheirs[3][1], // Pawn vs. advisor
+    QuadraticTheirs[3][2], // Pawn vs. cannon
+    QuadraticTheirs[3][3], // Pawn vs. pawn
+    QuadraticTheirs[4][0], // Knight vs. rook
+    QuadraticTheirs[4][1], // Knight vs. advisor
+    QuadraticTheirs[4][2], // Knight vs. cannon
+    QuadraticTheirs[4][3], // Knight vs. pawn
+    QuadraticTheirs[4][4], // Knight vs. knight
+    QuadraticTheirs[5][0], // Bishop vs. rook
+    QuadraticTheirs[5][1], // Bishop vs. advisor
+    QuadraticTheirs[5][2], // Bishop vs. cannon
+    QuadraticTheirs[5][3], // Bishop vs. pawn
+    QuadraticTheirs[5][4], // Bishop vs. knight
+    QuadraticTheirs[5][5], // Bishop vs. bishop
+    QuadraticTheirs[6][0], // Advisor pair vs. rook
+    QuadraticTheirs[6][1], // Advisor pair vs. advisor
+    QuadraticTheirs[6][2], // Advisor pair vs. cannon
+    QuadraticTheirs[6][3], // Advisor pair vs. pawn
+    QuadraticTheirs[6][4], // Advisor pair vs. knight
+    QuadraticTheirs[6][5], // Advisor pair vs. bishop
+    QuadraticTheirs[6][6], // Advisor pair vs. advisor pair
+    QuadraticTheirs[7][0], // Bishop pair vs. rook
+    QuadraticTheirs[7][1], // Bishop pair vs. advisor
+    QuadraticTheirs[7][2], // Bishop pair vs. cannon
+    QuadraticTheirs[7][3], // Bishop pair vs. pawn
+    QuadraticTheirs[7][4], // Bishop pair vs. knight
+    QuadraticTheirs[7][5], // Bishop pair vs. bishop
+    QuadraticTheirs[7][6], // Bishop pair vs. advisor pair
+    QuadraticTheirs[7][7]  // Bishop pair vs. bishop pair
+);
 #undef S
 
     // Evaluation class computes and stores attacks tables and other working data
@@ -280,6 +388,43 @@ namespace {
         return score;
     }
 
+    /// imbalance() calculates the imbalance by comparing the piece count of each
+    /// piece type for both colors.
+
+    template<Tracing T> template<Color Us>
+    Score Evaluation<T>::imbalance() {
+
+            const int pieceCount[COLOR_NB][PIECE_TYPE_NB] = {
+            { pos.count<ROOK>(WHITE), pos.count<ADVISOR>(WHITE), pos.count<CANNON>(WHITE),
+              pos.count<PAWN>(WHITE), pos.count<KNIGHT >(WHITE), pos.count<BISHOP>(WHITE),
+              pos.count<ADVISOR>(WHITE) > 1, pos.count<BISHOP>(WHITE) > 1 },
+            { pos.count<ROOK>(BLACK), pos.count<ADVISOR>(BLACK), pos.count<CANNON>(BLACK),
+              pos.count<PAWN>(BLACK), pos.count<KNIGHT >(BLACK), pos.count<BISHOP>(BLACK),
+              pos.count<ADVISOR>(BLACK) > 1, pos.count<BISHOP>(BLACK) > 1 }
+            };
+
+        constexpr Color Them = ~Us;
+
+        Score bonus = SCORE_ZERO;
+
+        // Second-degree polynomial material imbalance, by Tord Romstad
+        for (int pt1 = NO_PIECE_TYPE; pt1 < BISHOP; ++pt1)
+        {
+            if (!pieceCount[Us][pt1])
+                continue;
+
+            int v = QuadraticOurs[pt1][pt1] * pieceCount[Us][pt1];
+
+            for (int pt2 = NO_PIECE_TYPE; pt2 < pt1; ++pt2)
+                v += QuadraticOurs[pt1][pt2] * pieceCount[Us][pt2]
+                + QuadraticTheirs[pt1][pt2] * pieceCount[Them][pt2];
+
+            bonus += pieceCount[Us][pt1] * v;
+        }
+
+        return bonus;
+    }
+
 
     // Evaluation::winnable() adjusts the midgame and endgame score components, based on
     // the known attacking/defending status of the players. The final value is derived
@@ -287,7 +432,9 @@ namespace {
 
     template<Tracing T>
     Value Evaluation<T>::winnable(Score score) const {
-        int gamePhase = me->game_phase();
+        const int MidgameLimit = 15258, EndgameLimit = 3915;
+        Value sum = pos.material_sum();
+        int gamePhase = (((int)sum - EndgameLimit) * 128) / (MidgameLimit - EndgameLimit);
         Value mg = mg_value(score), eg = eg_value(score);
         Value v = mg * int(gamePhase)
             + eg * int(128 - gamePhase);
@@ -305,14 +452,11 @@ namespace {
 
         assert(!pos.checkers());
 
-        // Probe the material hash table
-        me = Material::probe(pos);
-
-        Score score = pos.psq_score() + me->imbalance();
+        Score score = pos.psq_score() + (imbalance<WHITE>() - imbalance<BLACK>()) / 16;
 
         if constexpr (T) {
             Trace::add(MATERIAL, pos.psq_score());
-            Trace::add(IMBALANCE, me->imbalance());
+            Trace::add(IMBALANCE, (imbalance<WHITE>() - imbalance<BLACK>()) / 16);
         }
 
         // Main evaluation begins here
