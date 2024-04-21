@@ -304,6 +304,7 @@ namespace {
     Score Evaluation<T>::king() {
         constexpr Color     Them = ~Us;
         Score score = SCORE_ZERO;
+        const Square ksq = pos.square<KING>(Us);
 
         // Attacked squares defended at most once by our rook or king
         Bitboard weak =  attackedBy[Them][ALL_PIECES]
@@ -317,7 +318,6 @@ namespace {
         Bitboard b1 = attacks_bb<ROOK>(ksq, pos.pieces());
         Bitboard unsafeChecks = 0, knightChecks, rookChecks;
         int kingDanger = 0;
-        const Square ksq = pos.square<KING>(Us);
 
         // Enemy rooks checks
         rookChecks = b1 & attackedBy[Them][ROOK] & safe;
