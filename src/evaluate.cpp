@@ -311,7 +311,7 @@ namespace {
             & (~attackedBy[Us][ALL_PIECES] | attackedBy[Us][KING] | attackedBy[Us][ROOK]);
 
         // Analyse the safe enemy's checks which are possible on next move
-        safe  = ~pos.pieces(Them);
+        Bitboard safe  = ~pos.pieces(Them);
         safe &= ~attackedBy[Us][ALL_PIECES] | (weak & attackedBy2[Them]);
 
         Bitboard b1 = attacks_bb<ROOK>(ksq, pos.pieces());
@@ -336,7 +336,7 @@ namespace {
         kingDanger += kd1 * popcount(kingRing[Us] & weak)
                     + kd2 * popcount(unsafeChecks)
                     + kd3 * popcount(pos.blockers_for_king(Us))
-                    + kd4   mg_value(mobility[Them] - mobility[Us])
+                    + kd4 * mg_value(mobility[Them] - mobility[Us])
                     - kd5 * !pos.count<ROOK>(Them)
                     + kd6;
 
