@@ -138,16 +138,10 @@ namespace {
         {S(-582, -4894), S(2260, -2360), S(4002, -2435), S(4595, 1090), S(5389, 2949), S(9760, 3209), S(8500, 3453), S(11956, 6472), S(13619, 7657)}, // KNIGHT
         {S(1692, -2811), S(911, -1898), S(3017, -904), S(7134, 1537), S(9276, -1351)}, // BISHOP
     };
-
-    // SafeCheck[PieceType][single/multiple] contains safe check bonus by piece type,
-    // higher if multiple safe checks are possible for that piece type.
-    int SafeCheck[2][2] = {
-        {0,0},
-        {0,0}
-    };
-    int kd1=0,kd2=0,kd3=0,kd4=0,kd5=0,kd6=0;
-    TUNE(SetRange(-3000,3000),SafeCheck);
-    TUNE(SetRange(-2000,2000),kd1,kd2,kd3,kd4,kd5,kd6);
+    Score badKingPosition = S(0,0);
+    Score badAdvisorPosition = S(0,0);
+    Score advisorAttackedByRook = S(0,0);
+    TUNE(SetRange(-200,200),badKingPosition,badAdvisorPosition,advisorAttackedByRook)
 #undef S
 
     // Evaluation class computes and stores attacks tables and other working data
@@ -178,10 +172,6 @@ namespace {
         // attackedBy2[color] are the squares attacked by at least 2 units of a given
         // color, including x-rays. But diagonal x-rays through pawns are not computed.
         Bitboard attackedBy2[COLOR_NB];
-
-        // kingRing[color] are the squares adjacent to the king plus some other
-        // very near squares, depending on king position.
-        Bitboard kingRing[COLOR_NB];
 
         Score mobility[COLOR_NB] = { SCORE_ZERO, SCORE_ZERO };
     };
@@ -272,6 +262,7 @@ namespace {
     Score Evaluation<T>::threat() {
         Score score = SCORE_ZERO; // 初始化
         constexpr Color Them = ~Us;
+        const Square ksq = pos.square<KING>(Them);
         // 士象全
         if (pos.count<ADVISOR>(Us) + pos.count<BISHOP>(Us) == 4)
             score += AdvisorBishopPair;
@@ -294,59 +285,16 @@ namespace {
             cnt = cnt >= 5 ? 4 : cnt;
             score += PiecesOnOneSide[cnt];
         }
-        return score;
-    }
-
-
-    // Evaluation::king() assigns bonuses and penalties to a king of a given color
-
-    template<Tracing T> template<Color Us>
-    Score Evaluation<T>::king() {
-        constexpr Color     Them = ~Us;
-        Score score = SCORE_ZERO;
-        const Square ksq = pos.square<KING>(Us);
-
-        // Attacked squares defended at most once by our rook or king
-        Bitboard weak =  attackedBy[Them][ALL_PIECES]
-            & ~attackedBy2[Us]
-            & (~attackedBy[Us][ALL_PIECES] | attackedBy[Us][KING] | attackedBy[Us][ROOK]);
-
-        // Analyse the safe enemy's checks which are possible on next move
-        Bitboard safe  = ~pos.pieces(Them);
-        safe &= ~attackedBy[Us][ALL_PIECES] | (weak & attackedBy2[Them]);
-
-        Bitboard b1 = attacks_bb<ROOK>(ksq, pos.pieces());
-        Bitboard unsafeChecks = 0, knightChecks, rookChecks;
-        int kingDanger = 0;
-
-        // Enemy rooks checks
-        rookChecks = b1 & attackedBy[Them][ROOK] & safe;
-        if (rookChecks)
-            kingDanger += SafeCheck[0][more_than_one(rookChecks)];
-        else
-            unsafeChecks |= b1 & attackedBy[Them][ROOK];
-
-        // Enemy knights checks
-        knightChecks = attacks_bb<KNIGHT_TO>(ksq, pos.pieces()) & attackedBy[Them][KNIGHT];
-        if (knightChecks & safe)
-            kingDanger += SafeCheck[1][more_than_one(knightChecks & safe)];
-        else
-            unsafeChecks |= knightChecks;
-
-        kingDanger += kd1 * popcount(kingRing[Us] & weak)
-                    + kd2 * popcount(unsafeChecks)
-                    + kd3 * popcount(pos.blockers_for_king(Us))
-                    + kd4 * mg_value(mobility[Them] - mobility[Us])
-                    - kd5 * !pos.count<ROOK>(Them)
-                    + kd6;
-
-        // Transform the kingDanger units into a Score, and subtract it from the evaluation
-        if (kingDanger > 100)
-            score -= make_score(kingDanger * kingDanger / 4096, kingDanger / 16);
-
-        if constexpr (T)
-            Trace::add(KING, Us, score);
-
+        // 九宫棋子位置
+        if ((ksq == SQ_E8 || ksq == SQ_E1) && (ksq & attackedBy[Them][ADVISOR])) {
+            score += badKingPosition;
+        }
+        if (pos.count<BISHOP>(Them) == 0 && popcount(pos.pieces(Them, ADVISOR) & attackedBy[Them][ADVISOR] & (Rank0BB | Rank1BB | Rank8BB | Rank9BB)) == 2 && (ksq == SQ_E0 || ksq == SQ_E9) && pos.count<CANNON>(Us) >= 1) {
+            score += badAdvisorPosition;
+        }
+        if (pos.count<ADVISOR>(Them) == 1 && (pos.square<ADVISOR>(Them) & attackedBy[Us][ROOK] & ~attackedBy[Them][ALL_PIECES])) {
+            score += advisorAttackedByRook;
+        }
         return score;
     }
 
@@ -398,8 +346,6 @@ namespace {
         score += threat<WHITE>() - threat<BLACK>();
 
         score += (mobility[WHITE] - mobility[BLACK]) / 100;
-
-        score +=  king<WHITE>() - king<BLACK>();
 
         if constexpr (T) {
             Trace::add(THREAT, threat<WHITE>(), threat<BLACK>());
