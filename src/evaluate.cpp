@@ -302,6 +302,7 @@ namespace {
 
     template<Tracing T> template<Color Us>
     Score Evaluation<T>::king() {
+        constexpr Color     Them = ~Us;
         Score score = SCORE_ZERO;
 
         // Attacked squares defended at most once by our rook or king
