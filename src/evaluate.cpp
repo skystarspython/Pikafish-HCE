@@ -141,7 +141,7 @@ namespace {
 
     // SafeCheck[PieceType][single/multiple] contains safe check bonus by piece type,
     // higher if multiple safe checks are possible for that piece type.
-    int SafeCheck[3][2] = {
+    int SafeCheck[2][2] = {
         {0,0},
         {0,0}
     };
