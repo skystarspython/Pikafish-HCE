@@ -193,8 +193,6 @@ namespace {
         attackedBy[Us][PAWN] = pawn_attacks_bb<Us>(pos.pieces(Us, PAWN));
         attackedBy[Us][ALL_PIECES] = attackedBy[Us][KING] | attackedBy[Us][PAWN];
         attackedBy2[Us] = attackedBy[Us][KING] & attackedBy[Us][PAWN];
-
-        kingRing[Us] = attacks_bb<KING>(ksq) | ksq;
     }
 
 
