@@ -141,7 +141,7 @@ namespace {
     Score badKingPosition = S(0,0);
     Score badAdvisorPosition = S(0,0);
     Score advisorAttackedByRook = S(0,0);
-    TUNE(SetRange(-200,200),badKingPosition,badAdvisorPosition,advisorAttackedByRook)
+    TUNE(SetRange(-200,200),badKingPosition,badAdvisorPosition,advisorAttackedByRook);
 #undef S
 
     // Evaluation class computes and stores attacks tables and other working data
