@@ -141,7 +141,7 @@ namespace {
 
     // SafeCheck[PieceType][single/multiple] contains safe check bonus by piece type,
     // higher if multiple safe checks are possible for that piece type.
-    int SafeCheck[2][2] = {
+    int SafeCheck[3][2] = {
         {0,0},
         {0,0}
     };
@@ -313,7 +313,10 @@ namespace {
         safe  = ~pos.pieces(Them);
         safe &= ~attackedBy[Us][ALL_PIECES] | (weak & attackedBy2[Them]);
 
-        b1 = attacks_bb<ROOK>(ksq, pos.pieces());
+        Bitboard b1 = attacks_bb<ROOK>(ksq, pos.pieces());
+        Bitboard unsafeChecks = 0, knightChecks, rookChecks;
+        int kingDanger = 0;
+        const Square ksq = pos.square<KING>(Us);
 
         // Enemy rooks checks
         rookChecks = b1 & attackedBy[Them][ROOK] & safe;
@@ -325,7 +328,7 @@ namespace {
         // Enemy knights checks
         knightChecks = attacks_bb<KNIGHT_TO>(ksq, pos.pieces()) & attackedBy[Them][KNIGHT];
         if (knightChecks & safe)
-            kingDanger += SafeCheck[0][more_than_one(knightChecks & safe)];
+            kingDanger += SafeCheck[1][more_than_one(knightChecks & safe)];
         else
             unsafeChecks |= knightChecks;
 
