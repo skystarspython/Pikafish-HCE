@@ -138,10 +138,18 @@ namespace {
         {S(-582, -4894), S(2260, -2360), S(4002, -2435), S(4595, 1090), S(5389, 2949), S(9760, 3209), S(8500, 3453), S(11956, 6472), S(13619, 7657)}, // KNIGHT
         {S(1692, -2811), S(911, -1898), S(3017, -904), S(7134, 1537), S(9276, -1351)}, // BISHOP
     };
-    Score badKingPosition = S(0,0);
-    Score badAdvisorPosition = S(0,0);
-    Score advisorAttackedByRook = S(0,0);
-    TUNE(SetRange(-200,200),badKingPosition,badAdvisorPosition,advisorAttackedByRook);
+
+    Score protectionBonus[PIECE_TYPE_NB][PIECE_TYPE_NB] = {
+        {}, // NO_PIECE_TYPE
+        {S(0,0),S(0,0),S(0,0),S(0,0),S(0,0),S(0,0),S(0,0)}, // ROOK
+        {S(0,0),S(0,0),S(0,0),S(0,0),S(0,0),S(0,0),S(0,0)}, // ADVISOR
+        {S(0,0),S(0,0),S(0,0),S(0,0),S(0,0),S(0,0),S(0,0)}, // CANNON
+        {}, // PAWN
+        {S(0,0),S(0,0),S(0,0),S(0,0),S(0,0),S(0,0),S(0,0)}, // KNIGHT
+        {S(0,0),S(0,0),S(0,0),S(0,0),S(0,0),S(0,0),S(0,0)}, // BISHOP
+    };
+    
+    TUNE(SetRange(-20000,20000),protectionBonus[1],protectionBonus[2],protectionBonus[3],protectionBonus[5],protectionBonus[6]);
 #undef S
 
     // Evaluation class computes and stores attacks tables and other working data
@@ -174,6 +182,8 @@ namespace {
         Bitboard attackedBy2[COLOR_NB];
 
         Score mobility[COLOR_NB] = { SCORE_ZERO, SCORE_ZERO };
+
+        Score protection[COLOR_NB] = { SCORE_ZERO, SCORE_ZERO };
     };
 
 
@@ -226,8 +236,14 @@ namespace {
             attackedBy[Us][ALL_PIECES] |= b;
 
             int mob = popcount(b & ~attackedBy[Them][PAWN]);
-            if constexpr (Pt != PAWN)
-                mobility[Us] += mobilityBonus[Pt][mob];
+            mobility[Us] += mobilityBonus[Pt][mob];
+
+            Bitboard protectedBB = b & pos.pieces(Us) & (~attackedBy2[Them]);
+            while (protectedBB) {
+                Square protectedSq = pop_lsb(protectedBB);
+                PieceType protectedPt = type_of(pos.piece_on(protectedSq));
+                protection[Us] += protectionBonus[Pt][protectedPt];
+            }
 
             if constexpr (Pt == CANNON) { // 炮的评估
                 int blocker = popcount(between_bb(s, ksq) & pos.pieces()) - 1;
@@ -283,16 +299,6 @@ namespace {
             cnt = cnt >= 5 ? 4 : cnt;
             score += PiecesOnOneSide[cnt];
         }
-        // 九宫棋子位置
-        if ((ksq == SQ_E8 || ksq == SQ_E1) && (ksq & attackedBy[Them][ADVISOR])) {
-            score += badKingPosition;
-        }
-        if (pos.count<BISHOP>(Them) == 0 && popcount(pos.pieces(Them, ADVISOR) & attackedBy[Them][ADVISOR] & (Rank0BB | Rank1BB | Rank8BB | Rank9BB)) == 2 && (ksq == SQ_E0 || ksq == SQ_E9) && pos.count<CANNON>(Us) >= 1) {
-            score += badAdvisorPosition;
-        }
-        if (pos.count<ADVISOR>(Them) == 1 && (pos.square<ADVISOR>(Them) & attackedBy[Us][ROOK] & ~attackedBy[Them][ALL_PIECES])) {
-            score += advisorAttackedByRook;
-        }
         return score;
     }
 
@@ -344,6 +350,7 @@ namespace {
         score += threat<WHITE>() - threat<BLACK>();
 
         score += (mobility[WHITE] - mobility[BLACK]) / 100;
+        score += (protection[WHITE] - protection[BLACK]) / 100;
 
         if constexpr (T) {
             Trace::add(THREAT, threat<WHITE>(), threat<BLACK>());
