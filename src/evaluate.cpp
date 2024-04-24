@@ -120,6 +120,7 @@ namespace {
     constexpr Score HollowCannon = S(85, 91);
     constexpr Score CentralKnight = S(50, 53);
     constexpr Score BottomCannon = S(18, 8);
+    Score BottomCannonWithRook = S(0, 0);
     constexpr Score AdvisorBishopPair = S(24, -43);
     constexpr Score CrossedPawn[3][6] = {
         { S(-56, -40), S(6, 24), S(11, 7), S(-29, 7), S(-9, -1), S(-4, -7) },
@@ -163,15 +164,7 @@ namespace {
             S(-341, 442), S(3092, 1652), S(4357, -387), S(-960, -1451)
         } // BISHOP
     };
-
-    // SafeCheck[PieceType][single/multiple] contains safe check bonus by piece type,
-    // higher if multiple safe checks are possible for that piece type.
-    Score SafeCheck[2][2] = {
-        {S(0,0),S(0,0)},
-        {S(0,0),S(0,0)}
-    };
-    Score unsafeCheckBonus = S(0,0);
-    TUNE(SetRange(-150,150),SafeCheck,unsafeCheckBonus);
+    TUNE(SetRange(-150,150),BottomCannonWithRook);
 #undef S
 
     // Evaluation class computes and stores attacks tables and other working data
@@ -284,6 +277,9 @@ namespace {
                 if (rank_of(s) == enemyBottom && !blocker && (ksq == SQ_E0 || ksq == SQ_E9) && (pos.pieces(Them) & enemyCenter)) { // 沉底炮
                     score += BottomCannon;
                 }
+                if (rank_of(s) == enemyBottom && (between_bb(s, ksq) & pos.pieces(Us, ROOK)) && (ksq == SQ_E0 || ksq == SQ_E9)) { // 底部炮+车
+                    score += BottomCannonWithRook;
+                }
             }
             if constexpr (Pt == ROOK)
             {
@@ -321,34 +317,6 @@ namespace {
             cnt = cnt >= 5 ? 4 : cnt;
             score += PiecesOnOneSide[cnt];
         }
-
-        // Attacked squares defended at most once by our rook or king
-        Bitboard weak =  attackedBy[Them][ALL_PIECES]
-            & ~attackedBy2[Us]
-            & (~attackedBy[Us][ALL_PIECES] | attackedBy[Us][KING] | attackedBy[Us][ROOK]);
-
-        // Analyse the safe enemy's checks which are possible on next move
-        Bitboard safe  = ~pos.pieces(Them);
-        safe &= ~attackedBy[Us][ALL_PIECES] | (weak & attackedBy2[Them]);
-
-        Bitboard b1 = attacks_bb<ROOK>(ksq, pos.pieces());
-        Bitboard unsafeChecks = 0, knightChecks, rookChecks;
-
-        // Enemy rooks checks
-        rookChecks = b1 & attackedBy[Them][ROOK] & safe;
-        if (rookChecks)
-            score += SafeCheck[0][more_than_one(rookChecks)];
-        else
-            unsafeChecks |= b1 & attackedBy[Them][ROOK];
-
-        // Enemy knights checks
-        knightChecks = attacks_bb<KNIGHT_TO>(ksq, pos.pieces()) & attackedBy[Them][KNIGHT];
-        if (knightChecks & safe)
-            score += SafeCheck[1][more_than_one(knightChecks & safe)];
-        else
-            unsafeChecks |= knightChecks;
-        
-        score += popcount(unsafeChecks) * unsafeCheckBonus;
 
         return score;
     }
