@@ -3,7 +3,7 @@ name: Pikafish
 on:
   push:
     branches:
-      - main
+      - linux_test
 
 jobs:
   Pikafish:
@@ -11,20 +11,18 @@ jobs:
     runs-on: ${{ matrix.config.os }}
     env:
       ARCH: x86-64${{ matrix.arch }}
-      COMPILER: clang++
+      COMPCXX: clang++
       COMP: clang
       EXE: pikafish${{ matrix.arch }}${{ matrix.config.ext }}
       SDE: ${{ matrix.config.sde }}
     strategy:
       matrix:
         config:
-          - name: Windows
-            os: windows-latest
-            shell: msys2 {0}
-            ext: .exe
-            sde: /d/a/Pikafish-HCE/Pikafish-HCE/.output/sde-temp-files/sde-external-9.27.0-2023-09-13-win/sde.exe -future --
-        arch: ["-vnni512", "-bmi2", "-avx2", "-modern"]
-
+          - name: Linux
+            os: ubuntu-20.04 
+            shell: bash
+            sde: /home/runner/work/Pikafish/Pikafish/.output/sde-temp-files/sde-external-9.27.0-2023-09-13-lin/sde -future --
+        arch: ["-bmi2"]
     defaults:
       run:
         working-directory: src
@@ -55,7 +53,6 @@ jobs:
 
       - name: Compile ${{ matrix.arch }} build
         run: |
-          wget -q https://github.com/official-pikafish/Networks/releases/download/master-net/pikafish.nnue
           make -j profile-build EXE=$EXE WINE_PATH="$SDE"
           make strip EXE=$EXE
           cp $EXE ../
