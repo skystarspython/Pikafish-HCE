@@ -38,41 +38,6 @@ using namespace std;
 
 namespace Stockfish {
 
-namespace Eval {
-
-  string currentEvalFileName = "None";
-
-  /// NNUE::init() tries to load a NNUE network at startup time, or when the engine
-  /// receives a UCI command "setoption name EvalFile value .*.nnue"
-  /// The name of the NNUE network is always retrieved from the EvalFile option.
-  /// We search the given network in two locations: in the active working directory and
-  /// in the engine directory.
-
-  void NNUE::init() {
-
-    string eval_file = string(Options["EvalFile"]);
-    if (eval_file.empty())
-        eval_file = EvalFileDefaultName;
-
-    vector<string> dirs = { "" , CommandLine::binaryDirectory };
-
-    for (string directory : dirs)
-        if (currentEvalFileName != eval_file)
-        {
-            ifstream stream(directory + eval_file, ios::binary);
-            stringstream ss = read_zipped_nnue(directory + eval_file);
-            if (load_eval(eval_file, stream) || load_eval(eval_file, ss))
-                currentEvalFileName = eval_file;
-        }
-  }
-
-  /// NNUE::verify() verifies that the last net used was loaded successfully
-  void NNUE::verify() {
-
-    return;
-  }
-}
-
 namespace Trace {
 
     enum Tracing { NO_TRACE, TRACE };

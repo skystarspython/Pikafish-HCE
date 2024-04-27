@@ -45,9 +45,6 @@ namespace Eval {
     std::string trace(Position& pos);
     Value evaluate(const Position& pos, int* complexity = nullptr);
 
-    void init();
-    void verify();
-
     bool load_eval(std::string name, std::istream& stream);
     bool save_eval(std::ostream& stream);
     bool save_eval(const std::optional<std::string>& filename);

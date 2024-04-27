@@ -60,7 +60,6 @@ typedef WORD(*fun5_t)();
 
 #include "misc.h"
 #include "thread.h"
-#include "compression/zip.h"
 
 using namespace std;
 
@@ -666,27 +665,5 @@ void init([[maybe_unused]] int argc, char* argv[]) {
 
 
 } // namespace CommandLine
-
-std::stringstream read_zipped_nnue(const std::string& fpath) {
-    void* buf = NULL;
-    size_t bufsize;
-
-    struct zip_t *zip = zip_open(fpath.c_str(), 0, 'r');
-    if (zip_entries_total(zip) == 1) {
-        zip_entry_openbyindex(zip, 0);
-        {
-            zip_entry_read(zip, &buf, &bufsize);
-        }
-        zip_entry_close(zip);
-    }
-    zip_close(zip);
-
-    std::stringstream ss;
-    if (buf)
-        ss.write((const char*)buf, bufsize);
-    free(buf);
-
-    return ss;
-}
 
 } // namespace Stockfish
