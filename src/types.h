@@ -281,13 +281,6 @@ enum Bound {
   BOUND_EXACT = BOUND_UPPER | BOUND_LOWER
 };
 
-inline Value RookValueMg    = Value(1373),  RookValueEg    = Value(2122);
-inline Value AdvisorValueMg = Value(104) ,  AdvisorValueEg  = Value(121) ;
-inline Value CannonValueMg  = Value(768) ,  CannonValueEg  = Value(753) ;
-inline Value PawnValueMg    = Value(127) ,  PawnValueEg    = Value(182) ;
-inline Value KnightValueMg  = Value(561) ,  KnightValueEg  = Value(774);
-inline Value BishopValueMg  = Value(167) ,  BishopValueEg  = Value(72)  ;
-
 enum Value : int {
   VALUE_ZERO      = 0,
   VALUE_DRAW      = 0,
@@ -312,6 +305,13 @@ enum Piece {
   B_ROOK = ROOK + 8, B_ADVISOR, B_CANNON, B_PAWN, B_KNIGHT, B_BISHOP, B_KING,
   PIECE_NB
 };
+
+inline Value RookValueMg    = Value(1373),  RookValueEg    = Value(2122);
+inline Value AdvisorValueMg = Value(104) ,  AdvisorValueEg  = Value(121) ;
+inline Value CannonValueMg  = Value(768) ,  CannonValueEg  = Value(753) ;
+inline Value PawnValueMg    = Value(127) ,  PawnValueEg    = Value(182) ;
+inline Value KnightValueMg  = Value(561) ,  KnightValueEg  = Value(774);
+inline Value BishopValueMg  = Value(167) ,  BishopValueEg  = Value(72)  ;
 
 inline Value PieceValue[PHASE_NB][PIECE_NB] = {
   { VALUE_ZERO, RookValueMg, AdvisorValueMg, CannonValueMg, PawnValueMg, KnightValueMg, BishopValueMg, VALUE_ZERO,
