@@ -139,14 +139,14 @@ int decr_14 = 3;
 int decr_15 = 1;
 
 
-/*TUNE(futi_mar, redu_1, redu_2, redu_3, st_bo_1, st_bo_2, st_bo_3, st_bo_4, Futi_1, Numov_0, Numov_1,
+TUNE(futi_mar, redu_1, redu_2, redu_3, st_bo_1, st_bo_2, st_bo_3, st_bo_4, Futi_1, Numov_0, Numov_1,
 Numov_2, Numov_3, Numov_4, Numov_5, Numov_6, Numov_9, probCut_1, probCut_2, probCut_3, comp_1, delt_1,
 delt_2, exten_1, exten_2, exten_3, exten_4, exten_5, exten_6, impro_1, Razo_1, Razo_2, statsc_1,
 extrbon_1, futiba_1, posr60cou, lmrse_1, lmrse_2, lmrse_3, lmrse_4, lmrse_5, opt_2, opt_3, opt_4, opt_5, decr_0,
 decr_1, decr_2, decr_3, decr_4, decr_5, decr_6, decr_7, decr_8, decr_9, improv_1, improv_2, improv_3, delt_3,
 delt_4, probdep_1, probdep_2, Futi_cap_0, Futi_cap_1, Futi_cap_2, Futi_cap_3, Futi_cap_4, Futi_cap_5, Futi_cap_6,
 Futi_cap_7, Futi_par_1, Futi_par_2, Futi_par_3, Futi_par_4, Futi_par_5, Futi_par_6, pvredu_1, pvredu_2, pvredu_3, cutredu_1, cutredu_2, cutredu_3,
-Futidep, nuldep_1, nuldep_2, exten_7, exten_8, exten_9, exten_10, exten_11, exten_12, exten_13, exten_14, decr_10, decr_11, decr_12, decr_13, decr_14, decr_15);*/
+Futidep, nuldep_1, nuldep_2, exten_7, exten_8, exten_9, exten_10, exten_11, exten_12, exten_13, exten_14, decr_10, decr_11, decr_12, decr_13, decr_14, decr_15);
 
 
 

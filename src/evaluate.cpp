@@ -78,7 +78,7 @@ namespace Trace {
     enum Tracing { NO_TRACE, TRACE };
 
     enum Term { // The first 8 entries are reserved for PieceType
-        MATERIAL = 8, IMBALANCE, PAIR, MOBILITY, THREAT, PASSED, SPACE, WINNABLE, TOTAL, TERM_NB
+        MATERIAL = 8, IMBALANCE, PAIR, MOBILITY, THREAT, PIECES, PROTECTION, WINNABLE, TOTAL, TERM_NB
     };
 
     Score scores[TERM_NB][COLOR_NB];
@@ -120,7 +120,6 @@ namespace {
     constexpr Score HollowCannon = S(85, 91);
     constexpr Score CentralKnight = S(50, 53);
     constexpr Score BottomCannon = S(18, 8);
-    Score BottomCannonWithRook = S(0, 0);
     constexpr Score AdvisorBishopPair = S(24, -43);
     constexpr Score CrossedPawn[3][6] = {
         { S(-56, -40), S(6, 24), S(11, 7), S(-29, 7), S(-9, -1), S(-4, -7) },
@@ -164,7 +163,7 @@ namespace {
             S(-341, 442), S(3092, 1652), S(4357, -387), S(-960, -1451)
         } // BISHOP
     };
-    TUNE(SetRange(-150,150),BottomCannonWithRook);
+    
 #undef S
 
     // Evaluation class computes and stores attacks tables and other working data
@@ -181,7 +180,6 @@ namespace {
         template<Color Us> void initialize();
         template<Color Us, PieceType Pt> Score pieces();
         template<Color Us> Score threat();
-        template<Color Us> Score king();
         Value winnable(Score score) const;
 
         const Position& pos;
@@ -277,9 +275,6 @@ namespace {
                 if (rank_of(s) == enemyBottom && !blocker && (ksq == SQ_E0 || ksq == SQ_E9) && (pos.pieces(Them) & enemyCenter)) { // 沉底炮
                     score += BottomCannon;
                 }
-                if (rank_of(s) == enemyBottom && (between_bb(s, ksq) & pos.pieces(Us, ROOK)) && (ksq == SQ_E0 || ksq == SQ_E9)) { // 底部炮+车
-                    score += BottomCannonWithRook;
-                }
             }
             if constexpr (Pt == ROOK)
             {
@@ -317,7 +312,6 @@ namespace {
             cnt = cnt >= 5 ? 4 : cnt;
             score += PiecesOnOneSide[cnt];
         }
-
         return score;
     }
 
@@ -360,11 +354,28 @@ namespace {
         initialize<WHITE>();
         initialize<BLACK>();
 
+        Score piecesWhite = pieces<WHITE, KNIGHT>()
+            + pieces<WHITE, BISHOP>()
+            + pieces<WHITE, ROOK>()
+            + pieces<WHITE, ADVISOR>()
+            + pieces<WHITE, CANNON>();
+
+        Score piecesBlack = pieces<WHITE, KNIGHT>()
+            - pieces<BLACK, KNIGHT>()
+            - pieces<BLACK, BISHOP>()
+            - pieces<BLACK, ROOK>()
+            - pieces<BLACK, ADVISOR>()
+            - pieces<BLACK, CANNON>();
+
         score += pieces<WHITE, KNIGHT>() - pieces<BLACK, KNIGHT>()
             + pieces<WHITE, BISHOP>() - pieces<BLACK, BISHOP>()
             + pieces<WHITE, ROOK>() - pieces<BLACK, ROOK>()
             + pieces<WHITE, ADVISOR>() - pieces<BLACK, ADVISOR>()
             + pieces<WHITE, CANNON>() - pieces<BLACK, CANNON>();
+
+        if constexpr (T) {
+            Trace::add(PIECES, piecesWhite, piecesBlack);
+        }
 
         score += threat<WHITE>() - threat<BLACK>();
 
@@ -373,7 +384,8 @@ namespace {
 
         if constexpr (T) {
             Trace::add(THREAT, threat<WHITE>(), threat<BLACK>());
-            Trace::add(MOBILITY, mobility[WHITE], mobility[BLACK]);
+            Trace::add(PROTECTION, protection[WHITE] / 100, protection[BLACK] / 100);
+            Trace::add(MOBILITY, mobility[WHITE] / 100, mobility[BLACK] / 100);
             Trace::add(TOTAL, score);
         }
 
@@ -515,15 +527,10 @@ std::string Eval::trace(Position& pos) {
         << "|   Material | " << Term(MATERIAL)
         << "|  Imbalance | " << Term(IMBALANCE)
         << "|       Pair | " << Term(PAIR)
-        << "|      Pawns | " << Term(PAWN)
-        << "|    Knights | " << Term(KNIGHT)
-        << "|    Bishops | " << Term(BISHOP)
-        << "|      Rooks | " << Term(ROOK)
+        << "|     Pieces | " << Term(PIECES)
+        << "| Protection | " << Term(PROTECTION)
         << "|   Mobility | " << Term(MOBILITY)
-        << "|King safety | " << Term(KING)
         << "|    Threats | " << Term(THREAT)
-        << "|     Passed | " << Term(PASSED)
-        << "|      Space | " << Term(SPACE)
         << "|   Winnable | " << Term(WINNABLE)
         << "+------------+-------------+-------------+-------------+\n"
         << "|      Total | " << Term(TOTAL)
