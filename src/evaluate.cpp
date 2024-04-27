@@ -78,7 +78,7 @@ namespace Trace {
     enum Tracing { NO_TRACE, TRACE };
 
     enum Term { // The first 8 entries are reserved for PieceType
-        MATERIAL = 8, IMBALANCE, PAIR, MOBILITY, THREAT, PIECES, PROTECTION, WINNABLE, TOTAL, TERM_NB
+        MATERIAL = 8, IMBALANCE, PAIR, MOBILITY, THREAT, PASSED, SPACE, WINNABLE, TOTAL, TERM_NB
     };
 
     Score scores[TERM_NB][COLOR_NB];
@@ -354,28 +354,11 @@ namespace {
         initialize<WHITE>();
         initialize<BLACK>();
 
-        Score piecesWhite = pieces<WHITE, KNIGHT>()
-            + pieces<WHITE, BISHOP>()
-            + pieces<WHITE, ROOK>()
-            + pieces<WHITE, ADVISOR>()
-            + pieces<WHITE, CANNON>();
-
-        Score piecesBlack = pieces<WHITE, KNIGHT>()
-            - pieces<BLACK, KNIGHT>()
-            - pieces<BLACK, BISHOP>()
-            - pieces<BLACK, ROOK>()
-            - pieces<BLACK, ADVISOR>()
-            - pieces<BLACK, CANNON>();
-
         score += pieces<WHITE, KNIGHT>() - pieces<BLACK, KNIGHT>()
             + pieces<WHITE, BISHOP>() - pieces<BLACK, BISHOP>()
             + pieces<WHITE, ROOK>() - pieces<BLACK, ROOK>()
             + pieces<WHITE, ADVISOR>() - pieces<BLACK, ADVISOR>()
             + pieces<WHITE, CANNON>() - pieces<BLACK, CANNON>();
-
-        if constexpr (T) {
-            Trace::add(PIECES, piecesWhite, piecesBlack);
-        }
 
         score += threat<WHITE>() - threat<BLACK>();
 
@@ -384,8 +367,7 @@ namespace {
 
         if constexpr (T) {
             Trace::add(THREAT, threat<WHITE>(), threat<BLACK>());
-            Trace::add(PROTECTION, protection[WHITE] / 100, protection[BLACK] / 100);
-            Trace::add(MOBILITY, mobility[WHITE] / 100, mobility[BLACK] / 100);
+            Trace::add(MOBILITY, mobility[WHITE], mobility[BLACK]);
             Trace::add(TOTAL, score);
         }
 
@@ -527,10 +509,15 @@ std::string Eval::trace(Position& pos) {
         << "|   Material | " << Term(MATERIAL)
         << "|  Imbalance | " << Term(IMBALANCE)
         << "|       Pair | " << Term(PAIR)
-        << "|     Pieces | " << Term(PIECES)
-        << "| Protection | " << Term(PROTECTION)
+        << "|      Pawns | " << Term(PAWN)
+        << "|    Knights | " << Term(KNIGHT)
+        << "|    Bishops | " << Term(BISHOP)
+        << "|      Rooks | " << Term(ROOK)
         << "|   Mobility | " << Term(MOBILITY)
+        << "|King safety | " << Term(KING)
         << "|    Threats | " << Term(THREAT)
+        << "|     Passed | " << Term(PASSED)
+        << "|      Space | " << Term(SPACE)
         << "|   Winnable | " << Term(WINNABLE)
         << "+------------+-------------+-------------+-------------+\n"
         << "|      Total | " << Term(TOTAL)
