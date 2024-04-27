@@ -78,7 +78,7 @@ namespace Trace {
     enum Tracing { NO_TRACE, TRACE };
 
     enum Term { // The first 8 entries are reserved for PieceType
-        MATERIAL = 8, IMBALANCE, PAIR, MOBILITY, THREAT, PIECES, WINNABLE, TOTAL, TERM_NB
+        MATERIAL = 8, IMBALANCE, PAIR, MOBILITY, THREAT, PIECES, PROTECTION, WINNABLE, TOTAL, TERM_NB
     };
 
     Score scores[TERM_NB][COLOR_NB];
@@ -348,6 +348,7 @@ namespace {
 
         if constexpr (T) {
             Trace::add(THREAT, threat<WHITE>(), threat<BLACK>());
+            Trace::add(PROTECTION, protection[WHITE] / 100, protection[BLACK] / 100);
             Trace::add(MOBILITY, mobility[WHITE] / 100, mobility[BLACK] / 100);
             Trace::add(TOTAL, score);
         }
@@ -491,6 +492,7 @@ std::string Eval::trace(Position& pos) {
         << "|  Imbalance | " << Term(IMBALANCE)
         << "|       Pair | " << Term(PAIR)
         << "|     Pieces | " << Term(PIECES)
+        << "| Protection | " << Term(PROTECTION)
         << "|   Mobility | " << Term(MOBILITY)
         << "|    Threats | " << Term(THREAT)
         << "|   Winnable | " << Term(WINNABLE)
