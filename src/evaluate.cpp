@@ -291,11 +291,11 @@ namespace {
             + pieces<WHITE, CANNON>();
 
         Score piecesBlack = pieces<WHITE, KNIGHT>()
-            - pieces<BLACK, KNIGHT>()
-            - pieces<BLACK, BISHOP>()
-            - pieces<BLACK, ROOK>()
-            - pieces<BLACK, ADVISOR>()
-            - pieces<BLACK, CANNON>();
+            + pieces<BLACK, KNIGHT>()
+            + pieces<BLACK, BISHOP>()
+            + pieces<BLACK, ROOK>()
+            + pieces<BLACK, ADVISOR>()
+            + pieces<BLACK, CANNON>();
 
         score += piecesWhite - piecesBlack;
 
