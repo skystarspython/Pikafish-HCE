@@ -290,8 +290,7 @@ namespace {
             + pieces<WHITE, ADVISOR>()
             + pieces<WHITE, CANNON>();
 
-        Score piecesBlack = pieces<WHITE, KNIGHT>()
-            + pieces<BLACK, KNIGHT>()
+        Score piecesBlack = pieces<BLACK, KNIGHT>()
             + pieces<BLACK, BISHOP>()
             + pieces<BLACK, ROOK>()
             + pieces<BLACK, ADVISOR>()
