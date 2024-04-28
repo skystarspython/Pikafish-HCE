@@ -82,13 +82,11 @@ namespace {
 
   void trace_eval(Position& pos) {
 
-    StateListPtr states(new std::deque<StateInfo>(1));
-    Position p;
-    p.set(pos.fen(), &states->back(), Threads.main());
+      StateListPtr states(new std::deque<StateInfo>(1));
+      Position p;
+      p.set(pos.fen(), &states->back(), Threads.main());
 
-    Eval::NNUE::verify();
-
-    sync_cout << "\n" << Eval::trace(p) << sync_endl;
+      sync_cout << "\n" << Eval::trace(p) << sync_endl;
   }
 
 
@@ -179,7 +177,7 @@ namespace {
                nodes += Threads.nodes_searched();
             }
             else
-               trace_eval(pos);
+                trace_eval(pos);
         }
         else if (token == "setoption")  setoption(is);
         else if (token == "position")   position(pos, is, states);
@@ -279,14 +277,6 @@ void UCI::loop(int argc, char* argv[]) {
       else if (token == "d")        sync_cout << pos << sync_endl;
       else if (token == "eval")     trace_eval(pos);
       else if (token == "compiler") sync_cout << compiler_info() << sync_endl;
-      else if (token == "export_net")
-      {
-          std::optional<std::string> filename;
-          std::string f;
-          if (is >> skipws >> f)
-              filename = f;
-          Eval::NNUE::save_eval(filename);
-      }
       else if (token == "--help" || token == "help" || token == "--license" || token == "license")
           sync_cout << "\nPikafish is a powerful xiangqi engine for playing and analyzing."
                        "\nIt is released as free software licensed under the GNU GPLv3 License."
