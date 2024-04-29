@@ -290,18 +290,13 @@ namespace {
             + pieces<WHITE, ADVISOR>()
             + pieces<WHITE, CANNON>();
 
-        Score piecesBlack = pieces<WHITE, KNIGHT>()
-            - pieces<BLACK, KNIGHT>()
-            - pieces<BLACK, BISHOP>()
-            - pieces<BLACK, ROOK>()
-            - pieces<BLACK, ADVISOR>()
-            - pieces<BLACK, CANNON>();
+        Score piecesBlack = pieces<BLACK, KNIGHT>()
+            + pieces<BLACK, BISHOP>()
+            + pieces<BLACK, ROOK>()
+            + pieces<BLACK, ADVISOR>()
+            + pieces<BLACK, CANNON>();
 
-        score += pieces<WHITE, KNIGHT>() - pieces<BLACK, KNIGHT>()
-            + pieces<WHITE, BISHOP>() - pieces<BLACK, BISHOP>()
-            + pieces<WHITE, ROOK>() - pieces<BLACK, ROOK>()
-            + pieces<WHITE, ADVISOR>() - pieces<BLACK, ADVISOR>()
-            + pieces<WHITE, CANNON>() - pieces<BLACK, CANNON>();
+        score += piecesWhite - piecesBlack;
 
         if constexpr (T) {
             Trace::add(PIECES, piecesWhite, piecesBlack);

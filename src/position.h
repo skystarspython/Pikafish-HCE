@@ -23,6 +23,7 @@
 #include <deque>
 #include <memory> // For std::unique_ptr
 #include <string>
+#include <cstring>
 
 #include "bitboard.h"
 #include "psqt.h"
