@@ -3,7 +3,7 @@ name: Pikafish
 on:
   push:
     branches:
-      - main
+      - android_test
 
 jobs:
   Pikafish-Android:
