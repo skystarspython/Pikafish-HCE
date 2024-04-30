@@ -90,7 +90,7 @@ jobs:
       LDFLAGS: "-static -Wno-unused-command-line-argument"
     strategy:
       matrix:
-        arch: ["armv8-dotprod", "armv8"]
+        arch: ["armv8"]
     defaults:
       run:
         working-directory: src
