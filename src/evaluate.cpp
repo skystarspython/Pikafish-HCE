@@ -201,11 +201,12 @@ namespace {
             mobility[Us] += mobilityBonus[Pt][mob];
 
             if constexpr (Pt == KNIGHT || Pt == ROOK) {
+                int PtId = (Pt == ROOK ? 0 : 1);
                 Bitboard protectedBB = b & pos.pieces(Us) & (~attackedBy2[Them]) & (~attackedBy[Them][PAWN]);
                 while (protectedBB) {
                     Square protectedSq = pop_lsb(protectedBB);
                     PieceType protectedPt = type_of(pos.piece_on(protectedSq));
-                    protection[Us] += protectionBonus[Pt][protectedPt];
+                    protection[Us] += protectionBonus[PtId][protectedPt];
                 }
             }
 
