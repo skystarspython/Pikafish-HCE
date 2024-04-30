@@ -103,9 +103,15 @@ namespace {
         {S(-582, -4894), S(2260, -2360), S(4002, -2435), S(4595, 1090), S(5389, 2949), S(9760, 3209), S(8500, 3453), S(11956, 6472), S(13619, 7657)}, // KNIGHT
         {S(1692, -2811), S(911, -1898), S(3017, -904), S(7134, 1537), S(9276, -1351)}, // BISHOP
     };
-    constexpr Score protectionBonus[1][PIECE_TYPE_NB] = {
-        S(1833, 112), S(1005, 1373), S(460, -327), S(-1001, -1037),
-        S(-2677, -321), S(-879, 5306), S(2328, 743), S(3864, 3564)
+    constexpr Score protectionBonus[2][PIECE_TYPE_NB] = {
+        {
+            S(1833, 112), S(1005, 1373), S(460, -327), S(-1001, -1037),
+            S(-2677, -321), S(-879, 5306), S(2328, 743), S(3864, 3564)
+        }, // ROOK
+        {
+            S(-841, -20), S(4270, 4745), S(-3281, -1955), S(1673, 3340),
+            S(-1139, 2037), S(-959, 991), S(-1884, 1464), S(-2588, 315)
+        } // KNIGHT
     };
 #undef S
 
@@ -194,12 +200,13 @@ namespace {
             int mob = popcount(b & ~attackedBy[Them][PAWN]);
             mobility[Us] += mobilityBonus[Pt][mob];
 
-            if constexpr (Pt == ROOK) {
+            if constexpr (Pt == KNIGHT || Pt == ROOK) {
+                int PtId = (Pt == ROOK ? 0 : 1);
                 Bitboard protectedBB = b & pos.pieces(Us) & (~attackedBy2[Them]) & (~attackedBy[Them][PAWN]);
                 while (protectedBB) {
                     Square protectedSq = pop_lsb(protectedBB);
                     PieceType protectedPt = type_of(pos.piece_on(protectedSq));
-                    protection[Us] += protectionBonus[protectedPt];
+                    protection[Us] += protectionBonus[PtId][protectedPt];
                 }
             }
 
