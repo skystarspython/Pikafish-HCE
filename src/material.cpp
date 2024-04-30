@@ -21,7 +21,6 @@
 
 #include "material.h"
 #include "thread.h"
-#include "endgame.h"
 
 using namespace std;
 
@@ -58,21 +57,9 @@ namespace Stockfish {
 
 #undef S
 
-        // Endgame evaluation and scaling functions are accessed directly and not through
-        // the function maps because they correspond to more than one material hash key.
-        Endgame<KAABBKR>    EvaluateKAABBKR[] = { Endgame<KAABBKR>(WHITE),    Endgame<KAABBKR>(BLACK) };
-
-        // Helper used to detect a given material distribution
-        // 车(士象全) vs 士象全
-        bool is_KAABBKR(const Position& pos, Color us) {
-            return  pos.material(~us) == AdvisorValueMg * 2 + BishopValueMg * 2
-                && pos.material(us) >= RookValueMg
-                && pos.count<ALL_PIECES>(us) == pos.count<ROOK>(us) + pos.count<ADVISOR>(us) + pos.count<BISHOP>(us) + 1;
-        }
-
         /// imbalance() calculates the imbalance by comparing the piece count of each
         /// piece type for both colors.
-        // 子力平衡
+
         template<Color Us>
         Score imbalance(const int pieceCount[][PIECE_TYPE_NB]) {
 
@@ -121,13 +108,6 @@ namespace Stockfish {
             Value sum = pos.material_sum();
             const int MidgameLimit = 15258, EndgameLimit = 3915;
             e->gamePhase = Phase(((sum - EndgameLimit) * PHASE_MIDGAME) / (MidgameLimit - EndgameLimit));
-
-            for (Color c : { WHITE, BLACK })
-                if (is_KAABBKR(pos, c))
-                {
-                    e->evaluationFunction = &EvaluateKAABBKR[c];
-                    return e;
-                }
 
             const int pieceCount[COLOR_NB][PIECE_TYPE_NB] = {
             { pos.count<ROOK>(WHITE), pos.count<ADVISOR>(WHITE), pos.count<CANNON>(WHITE),

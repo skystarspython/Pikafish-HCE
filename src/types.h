@@ -274,13 +274,6 @@ enum Phase {
   MG = 0, EG = 1, PHASE_NB = 2
 };
 
-enum ScaleFactor {
-  SCALE_FACTOR_DRAW    = 0,
-  SCALE_FACTOR_NORMAL  = 64,
-  SCALE_FACTOR_MAX     = 128,
-  SCALE_FACTOR_NONE    = 255
-};
-
 enum Bound {
   BOUND_NONE,
   BOUND_UPPER,
@@ -454,7 +447,6 @@ constexpr Square operator+(Square s, Direction d) { return Square(int(s) + int(d
 constexpr Square operator-(Square s, Direction d) { return Square(int(s) - int(d)); }
 inline Square& operator+=(Square& s, Direction d) { return s = s + d; }
 inline Square& operator-=(Square& s, Direction d) { return s = s - d; }
-inline Square operator^(Square s, Square i) { return Square(int(s) ^ int(i)); }
 
 /// Only declared but not defined. We don't want to multiply two scores due to
 /// a very high risk of overflow. So user should explicitly convert to integer.
@@ -488,10 +480,6 @@ constexpr Color operator~(Color c) {
 
 constexpr Square flip_rank(Square s) { // Swap A1 <-> A9
   return Square(SQ_A9 - s + s % 9 * 2);
-}
-
-constexpr Square flip_file(Square s) { // Swap A1 <-> H1
-    return Square(s + 8 - s % 9 * 2);
 }
 
 constexpr Value mate_in(int ply) {
@@ -529,14 +517,6 @@ constexpr File file_of(Square s) {
 
 constexpr Rank rank_of(Square s) {
   return Rank(s / FILE_NB);
-}
-
-constexpr Rank relative_rank(Color c, Rank r) {
-    return c == WHITE ? r : Rank(RANK_9 - r);
-}
-
-constexpr Rank relative_rank(Color c, Square s) {
-    return relative_rank(c, rank_of(s));
 }
 
 constexpr Direction pawn_push(Color c) {
