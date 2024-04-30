@@ -35,24 +35,24 @@ namespace Stockfish {
         constexpr Score QuadraticOurs[][PIECE_TYPE_NB] = {
             // OUR PIECE 2
             // rook   advisor  cannon   pawn     knight    bishop
-            {S(71, 3)                                             }, // Rook
-            {S(24, 74), S(44, -67)                                }, // Advisor
-            {S(48, 72), S(33, 62), S(-5, -63)                     }, // Cannon      OUR PIECE 1
-            {S(75, -14), S(31, 44), S(-3, 28), S(-11, 11)         }, // Pawn
-            {S(-92, 53), S(27, -9), S(-3, 234), S(44, 88), S(-30, -29)}, // Knight
-            {S(54, 104), S(175, -103), S(106, -64), S(43, -113), S(24, 6), S(2, -59)}  // Bishop
+            {S(-191, 23)                                             }, // Rook
+            {S(24, 74), S(244, -67)                                }, // Advisor
+            {S(48, 72), S(133, 62), S(315, -63)                     }, // Cannon      OUR PIECE 1
+            {S(75, -14), S(31, 44), S(113, 28), S(111, 11)         }, // Pawn
+            {S(-92, 53), S(27, -9), S(513, 234), S(244, 88), S(-30, -29)}, // Knight
+            {S(54, 104), S(275, -103), S(-6, -64), S(3, -113), S(24, 6), S(2, -59)}  // Bishop
         };
 
         // One Score parameter for each pair (our piece, their piece)
         constexpr Score QuadraticTheirs[][PIECE_TYPE_NB] = {
             // THEIR PIECE
             // rook   advisor  cannon   pawn     knight    bishop
-            {S(-35, -46)                                           }, // Rook
+            {S(-135, -46)                                           }, // Rook
             {S(-92, 32), S(138, -7)                                }, // Advisor
-            {S(-83, 13), S(-41, 43), S(20, 28)                     }, // Cannon      OUR PIECE
+            {S(-83, 13), S(-41, 43), S(-220, 28)                     }, // Cannon      OUR PIECE
             {S(-2, 13), S(-57, -118), S(-18, 121), S(70, -58)      }, // Pawn
-            {S(-37, 17), S(14, -86), S(38, -24), S(67, 43), S(-21, -42) }, // Knight
-            {S(72, 38), S(6, -79), S(24, -2), S(48, 30), S(30, 14), S(-51, 35) }  // Bishop
+            {S(-37, 17), S(14, -86), S(38, -24), S(567, 43), S(-21, -42) }, // Knight
+            {S(72, 38), S(-111, -79), S(24, -2), S(48, 30), S(30, 14), S(51, 35) }  // Bishop
         };
 
 #undef S
