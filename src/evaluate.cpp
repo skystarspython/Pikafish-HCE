@@ -82,18 +82,18 @@ using namespace Trace;
 namespace {
 
 #define S(mg, eg) make_score(mg, eg)
-    constexpr Score HollowCannon = S(885, 401);
-    constexpr Score CentralKnight = S(900, 300);
+    constexpr Score HollowCannon = S(1085, 201);
+    constexpr Score CentralKnight = S(1200, 1000);
     constexpr Score BottomCannon = S(318, 8);
-    constexpr Score AdvisorBishopPair = S(104, 143);
+    constexpr Score AdvisorBishopPair = S(204, 243);
     constexpr Score CrossedPawn[3][6] = {
-        { S(-56, -40), S(116, 124), S(111, 117), S(129, 117), S(219, 111), S(214, 117) },
+        { S(-56, -40), S(116, 124), S(111, 117), S(229, 117), S(419, 111), S(514, 117) },
         { S(-68, -35), S(100, 112), S(109, 113), S(116, 119), S(114, 100), S(236, 213) },
         { S(-79, 5), S(40, -8), S(32, 1), S(122, 9), S(110, -16), S(140, -20) }
     };
     constexpr Score ConnectedPawn = S(205, -5);
     constexpr Score RookOnOpenFile[2] = { S(0, -8), S(14, 16) };
-    constexpr Score PiecesOnOneSide[5] = { S(-3, 5), S(-3, 36), S(218, 126), S(319, 126), S(420, 314) };
+    constexpr Score PiecesOnOneSide[5] = { S(-3, 5), S(-3, 36), S(218, 126), S(819, 126), S(1120, 314) };
     constexpr Score mobilityBonus[PIECE_TYPE_NB][18] = {
         {}, // NO_PIECE_TYPE
         {S(-15555, -3045), S(-14423, -2895), S(-12344, -2170), S(-10229, -3012), S(-8867, -5183), S(-6197, -3787), S(-4637, -2581), S(-2577, -3604), S(-412, -3371), S(2254, -5076), S(4018, -4178), S(6029, -946), S(8410, -3079), S(9004, -1200), S(10081, -3500), S(11035, -1212), S(11433, -3483), S(11686, -4329)}, // ROOK
