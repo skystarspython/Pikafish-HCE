@@ -83,9 +83,9 @@ namespace {
 
 #define S(mg, eg) make_score(mg, eg)
     constexpr Score HollowCannon = S(385, 91);
-    constexpr Score CentralKnight = S(-1050, -853);
+    constexpr Score CentralKnight = S(700, 300);
     constexpr Score BottomCannon = S(118, 8);
-    constexpr Score AdvisorBishopPair = S(-24, -43);
+    constexpr Score AdvisorBishopPair = S(104, 143);
     constexpr Score CrossedPawn[3][6] = {
         { S(-56, -40), S(116, 124), S(111, 117), S(129, 117), S(219, 111), S(214, 117) },
         { S(-68, -35), S(100, 112), S(109, 113), S(116, 119), S(114, 100), S(236, 213) },
