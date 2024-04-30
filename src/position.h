@@ -146,6 +146,7 @@ public:
   Score psq_score() const;
   Value material_sum() const;
   Value material_diff() const;
+  Value material(Color c) const;
 
   // Position consistency check, for debugging
   bool pos_is_ok() const;
@@ -311,6 +312,10 @@ inline Value Position::material_sum() const {
 
 inline Value Position::material_diff() const {
   return st->material[sideToMove] - st->material[~sideToMove];
+}
+
+inline Value Position::material(Color c) const {
+  return st->material[c];
 }
 
 inline int Position::game_ply() const {
