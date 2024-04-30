@@ -57,10 +57,8 @@ endif
 
 ### Source and object files
 SRCS = benchmark.cpp bitboard.cpp evaluate.cpp main.cpp material.cpp \
-	misc.cpp movegen.cpp movepick.cpp position.cpp psqt.cpp\
-	search.cpp thread.cpp timeman.cpp tt.cpp uci.cpp ucioption.cpp tune.cpp \
-	nnue/evaluate_nnue.cpp nnue/features/half_ka_v2_hm.cpp \
-	compression/zip.cpp
+	misc.cpp movegen.cpp movepick.cpp position.cpp psqt.cpp endgame.cpp \
+	search.cpp thread.cpp timeman.cpp tt.cpp uci.cpp ucioption.cpp tune.cpp
 
 OBJS = $(notdir $(SRCS:.cpp=.o))
 

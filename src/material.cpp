@@ -21,6 +21,7 @@
 
 #include "material.h"
 #include "thread.h"
+#include "endgame.h"
 
 using namespace std;
 
@@ -32,21 +33,19 @@ namespace Stockfish {
         // Polynomial material imbalance parameters
 
         // One Score parameter for each pair (our piece, another of our pieces)
-        Score QuadraticOurs[][PIECE_TYPE_NB] = {
+        constexpr Score QuadraticOurs[][PIECE_TYPE_NB] = {
             // OUR PIECE 2
-            // rook   advisor  cannon   pawn     knight    bishop  advisor pair  bishop pair
-            {S(71, 3)                                                                       }, // Rook
-            {S(24, 74), S(44, -67)                                                          }, // Advisor
-            {S(48, 72), S(33, 62), S(-5, -63)                                               }, // Cannon      OUR PIECE 1
-            {S(75, -14), S(31, 44), S(-3, 28), S(-11, 11)                                   }, // Pawn
-            {S(-92, 53), S(27, -9), S(-3, 234), S(44, 88), S(-30, -29)                      }, // Knight
-            {S(54, 104), S(175, -103), S(106, -64), S(43, -113), S(24, 6), S(2, -59)        },  // Bishop
-            {S(0,0), S(0,0), S(0,0), S(0,0), S(0,0), S(0,0), S(0,0)}, // Advisor pair
-            {S(0,0), S(0,0), S(0,0), S(0,0), S(0,0), S(0,0), S(0,0), S(0,0)} // Bishop pair
+            // rook   advisor  cannon   pawn     knight    bishop
+            {S(71, 3)                                             }, // Rook
+            {S(24, 74), S(44, -67)                                }, // Advisor
+            {S(48, 72), S(33, 62), S(-5, -63)                     }, // Cannon      OUR PIECE 1
+            {S(75, -14), S(31, 44), S(-3, 28), S(-11, 11)         }, // Pawn
+            {S(-92, 53), S(27, -9), S(-3, 234), S(44, 88), S(-30, -29)}, // Knight
+            {S(54, 104), S(175, -103), S(106, -64), S(43, -113), S(24, 6), S(2, -59)}  // Bishop
         };
 
         // One Score parameter for each pair (our piece, their piece)
-        Score QuadraticTheirs[][PIECE_TYPE_NB] = {
+        constexpr Score QuadraticTheirs[][PIECE_TYPE_NB] = {
             // THEIR PIECE
             // rook   advisor  cannon   pawn     knight    bishop
             {S(-35, -46)                                           }, // Rook
@@ -54,17 +53,26 @@ namespace Stockfish {
             {S(-83, 13), S(-41, 43), S(20, 28)                     }, // Cannon      OUR PIECE
             {S(-2, 13), S(-57, -118), S(-18, 121), S(70, -58)      }, // Pawn
             {S(-37, 17), S(14, -86), S(38, -24), S(67, 43), S(-21, -42) }, // Knight
-            {S(72, 38), S(6, -79), S(24, -2), S(48, 30), S(30, 14), S(-51, 35) },  // Bishop
-            {S(0,0), S(0,0), S(0,0), S(0,0), S(0,0), S(0,0), S(0,0)}, // Advisor pair
-            {S(0,0), S(0,0), S(0,0), S(0,0), S(0,0), S(0,0), S(0,0), S(0,0)} // Bishop pair
+            {S(72, 38), S(6, -79), S(24, -2), S(48, 30), S(30, 14), S(-51, 35) }  // Bishop
         };
-
 
 #undef S
 
+        // Endgame evaluation and scaling functions are accessed directly and not through
+        // the function maps because they correspond to more than one material hash key.
+        Endgame<KAABBKR>    EvaluateKAABBKR[] = { Endgame<KAABBKR>(WHITE),    Endgame<KAABBKR>(BLACK) };
+
+        // Helper used to detect a given material distribution
+        // 车(士象全) vs 士象全
+        bool is_KAABBKR(const Position& pos, Color us) {
+            return  pos.material(~us) == AdvisorValueMg * 2 + BishopValueMg * 2
+                && pos.material(us) >= RookValueMg
+                && pos.count<ALL_PIECES>(us) == pos.count<ROOK>(us) + pos.count<ADVISOR>(us) + pos.count<BISHOP>(us) + 1;
+        }
+
         /// imbalance() calculates the imbalance by comparing the piece count of each
         /// piece type for both colors.
-
+        // 子力平衡
         template<Color Us>
         Score imbalance(const int pieceCount[][PIECE_TYPE_NB]) {
 
@@ -73,7 +81,7 @@ namespace Stockfish {
             Score bonus = SCORE_ZERO;
 
             // Second-degree polynomial material imbalance, by Tord Romstad
-            for (int pt1 = NO_PIECE_TYPE; pt1 <= 7; ++pt1)
+            for (int pt1 = NO_PIECE_TYPE; pt1 < BISHOP; ++pt1)
             {
                 if (!pieceCount[Us][pt1])
                     continue;
@@ -114,13 +122,18 @@ namespace Stockfish {
             const int MidgameLimit = 15258, EndgameLimit = 3915;
             e->gamePhase = Phase(((sum - EndgameLimit) * PHASE_MIDGAME) / (MidgameLimit - EndgameLimit));
 
+            for (Color c : { WHITE, BLACK })
+                if (is_KAABBKR(pos, c))
+                {
+                    e->evaluationFunction = &EvaluateKAABBKR[c];
+                    return e;
+                }
+
             const int pieceCount[COLOR_NB][PIECE_TYPE_NB] = {
             { pos.count<ROOK>(WHITE), pos.count<ADVISOR>(WHITE), pos.count<CANNON>(WHITE),
-              pos.count<PAWN>(WHITE), pos.count<KNIGHT >(WHITE), pos.count<BISHOP>(WHITE),
-              pos.count<ADVISOR>(WHITE) > 1, pos.count<BISHOP>(WHITE) > 1 },
+              pos.count<PAWN>(WHITE), pos.count<KNIGHT >(WHITE), pos.count<BISHOP>(WHITE) },
             { pos.count<ROOK>(BLACK), pos.count<ADVISOR>(BLACK), pos.count<CANNON>(BLACK),
-              pos.count<PAWN>(BLACK), pos.count<KNIGHT >(BLACK), pos.count<BISHOP>(BLACK),
-              pos.count<ADVISOR>(BLACK) > 1, pos.count<BISHOP>(BLACK) > 1 }
+              pos.count<PAWN>(BLACK), pos.count<KNIGHT >(BLACK), pos.count<BISHOP>(BLACK) }
             };
 
             e->score = (imbalance<WHITE>(pieceCount) - imbalance<BLACK>(pieceCount)) / 16;

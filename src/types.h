@@ -274,6 +274,13 @@ enum Phase {
   MG = 0, EG = 1, PHASE_NB = 2
 };
 
+enum ScaleFactor {
+  SCALE_FACTOR_DRAW    = 0,
+  SCALE_FACTOR_NORMAL  = 64,
+  SCALE_FACTOR_MAX     = 128,
+  SCALE_FACTOR_NONE    = 255
+};
+
 enum Bound {
   BOUND_NONE,
   BOUND_UPPER,
@@ -291,6 +298,13 @@ enum Value : int {
 
   VALUE_MATE_IN_MAX_PLY  =  VALUE_MATE - MAX_PLY,
   VALUE_MATED_IN_MAX_PLY = -VALUE_MATE_IN_MAX_PLY,
+
+  RookValueMg    = 1373,  RookValueEg    = 2122,
+  AdvisorValueMg = 104 ,  AdvisorValueEg = 121 ,
+  CannonValueMg  = 768 ,  CannonValueEg  = 753 ,
+  PawnValueMg    = 127 ,  PawnValueEg    = 182 ,
+  KnightValueMg  = 561 ,  KnightValueEg  = 774 ,
+  BishopValueMg  = 167 ,  BishopValueEg  = 72 ,
 };
 
 enum PieceType {
@@ -306,14 +320,7 @@ enum Piece {
   PIECE_NB
 };
 
-inline Value RookValueMg    = Value(1373),  RookValueEg    = Value(2122);
-inline Value AdvisorValueMg = Value(104) ,  AdvisorValueEg  = Value(121) ;
-inline Value CannonValueMg  = Value(768) ,  CannonValueEg  = Value(753) ;
-inline Value PawnValueMg    = Value(127) ,  PawnValueEg    = Value(182) ;
-inline Value KnightValueMg  = Value(561) ,  KnightValueEg  = Value(774);
-inline Value BishopValueMg  = Value(167) ,  BishopValueEg  = Value(72)  ;
-
-inline Value PieceValue[PHASE_NB][PIECE_NB] = {
+constexpr Value PieceValue[PHASE_NB][PIECE_NB] = {
   { VALUE_ZERO, RookValueMg, AdvisorValueMg, CannonValueMg, PawnValueMg, KnightValueMg, BishopValueMg, VALUE_ZERO,
     VALUE_ZERO, RookValueMg, AdvisorValueMg, CannonValueMg, PawnValueMg, KnightValueMg, BishopValueMg, VALUE_ZERO },
   { VALUE_ZERO, RookValueEg, AdvisorValueEg, CannonValueEg, PawnValueEg, KnightValueEg, BishopValueEg, VALUE_ZERO,
@@ -447,6 +454,7 @@ constexpr Square operator+(Square s, Direction d) { return Square(int(s) + int(d
 constexpr Square operator-(Square s, Direction d) { return Square(int(s) - int(d)); }
 inline Square& operator+=(Square& s, Direction d) { return s = s + d; }
 inline Square& operator-=(Square& s, Direction d) { return s = s - d; }
+inline Square operator^(Square s, Square i) { return Square(int(s) ^ int(i)); }
 
 /// Only declared but not defined. We don't want to multiply two scores due to
 /// a very high risk of overflow. So user should explicitly convert to integer.
@@ -480,6 +488,10 @@ constexpr Color operator~(Color c) {
 
 constexpr Square flip_rank(Square s) { // Swap A1 <-> A9
   return Square(SQ_A9 - s + s % 9 * 2);
+}
+
+constexpr Square flip_file(Square s) { // Swap A1 <-> H1
+    return Square(s + 8 - s % 9 * 2);
 }
 
 constexpr Value mate_in(int ply) {
@@ -517,6 +529,14 @@ constexpr File file_of(Square s) {
 
 constexpr Rank rank_of(Square s) {
   return Rank(s / FILE_NB);
+}
+
+constexpr Rank relative_rank(Color c, Rank r) {
+    return c == WHITE ? r : Rank(RANK_9 - r);
+}
+
+constexpr Rank relative_rank(Color c, Square s) {
+    return relative_rank(c, rank_of(s));
 }
 
 constexpr Direction pawn_push(Color c) {

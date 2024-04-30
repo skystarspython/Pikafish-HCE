@@ -23,35 +23,6 @@
 
 using namespace Stockfish;
 
-template <int Phase, int PieceType>
-void updatePieceValue(Value v) {
-  PieceValue[Phase][PieceType] = v;
-  PieceValue[Phase][PieceType + 8] = v;
-};
-void postUpdate() {
-  updatePieceValue<MG, ROOK>(RookValueMg);
-  updatePieceValue<MG, ADVISOR>(AdvisorValueMg);
-  updatePieceValue<MG, CANNON>(CannonValueMg);
-  updatePieceValue<MG, PAWN>(PawnValueMg);
-  updatePieceValue<MG, KNIGHT>(KnightValueMg);
-  updatePieceValue<MG, BISHOP>(BishopValueMg);
-  updatePieceValue<EG, ROOK>(RookValueEg);
-  updatePieceValue<EG, ADVISOR>(AdvisorValueEg);
-  updatePieceValue<EG, CANNON>(CannonValueEg);
-  updatePieceValue<EG, PAWN>(PawnValueEg);
-  updatePieceValue<EG, KNIGHT>(KnightValueEg);
-  updatePieceValue<EG, BISHOP>(BishopValueEg);
-}
-TUNE(
-RookValueMg, RookValueEg,
-AdvisorValueMg, AdvisorValueEg,
-CannonValueMg, CannonValueEg,
-PawnValueMg, PawnValueEg,
-KnightValueMg, KnightValueEg,
-BishopValueMg, BishopValueEg,
-postUpdate
-);
-
 int main(int argc, char* argv[]) {
 
   std::cout << engine_info() << std::endl;
@@ -64,7 +35,6 @@ int main(int argc, char* argv[]) {
   Position::init();
   Threads.set(size_t(Options["Threads"]));
   Search::clear(); // After threads are up
-  Eval::NNUE::init();
 
   UCI::loop(argc, argv);
 

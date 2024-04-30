@@ -23,12 +23,12 @@
 #include <deque>
 #include <memory> // For std::unique_ptr
 #include <string>
+#include <cstring>
 
 #include "bitboard.h"
 #include "psqt.h"
 #include "types.h"
-
-#include "nnue/nnue_accumulator.h"
+#include "misc.h"
 
 namespace Stockfish {
 
@@ -56,10 +56,6 @@ struct StateInfo {
   Piece      capturedPiece;
   uint16_t   chased;
   Move       move;
-
-  // Used by NNUE
-  Eval::NNUE::Accumulator accumulator;
-  DirtyPiece dirtyPiece;
 };
 
 
@@ -150,6 +146,7 @@ public:
   Score psq_score() const;
   Value material_sum() const;
   Value material_diff() const;
+  Value material(Color c) const;
 
   // Position consistency check, for debugging
   bool pos_is_ok() const;
@@ -315,6 +312,10 @@ inline Value Position::material_sum() const {
 
 inline Value Position::material_diff() const {
   return st->material[sideToMove] - st->material[~sideToMove];
+}
+
+inline Value Position::material(Color c) const {
+  return st->material[c];
 }
 
 inline int Position::game_ply() const {
