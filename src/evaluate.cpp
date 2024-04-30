@@ -92,7 +92,6 @@ namespace {
         { S(-79, 5), S(40, -8), S(32, 1), S(-22, 9), S(-20, -16), S(-40, -20) }
     };
     constexpr Score ConnectedPawn = S(5, -5);
-    constexpr Score RookOnOpenFile[2] = { S(0, -8), S(14, 16) };
     constexpr Score PiecesOnOneSide[5] = { S(-3, 5), S(-13, 36), S(18, 26), S(9, 26), S(10, -4) };
     constexpr Score mobilityBonus[PIECE_TYPE_NB][18] = {
         {}, // NO_PIECE_TYPE
@@ -186,8 +185,7 @@ namespace {
             attackedBy[Us][ALL_PIECES] |= b;
 
             int mob = popcount(b & ~attackedBy[Them][PAWN]);
-            if constexpr (Pt != PAWN)
-                mobility[Us] += mobilityBonus[Pt][mob];
+            mobility[Us] += mobilityBonus[Pt][mob];
 
             if constexpr (Pt == CANNON) { // 炮的评估
                 int blocker = popcount(between_bb(s, ksq) & pos.pieces()) - 1;
@@ -206,11 +204,6 @@ namespace {
                 if (rank_of(s) == enemyBottom && !blocker && (ksq == SQ_E0 || ksq == SQ_E9) && (pos.pieces(Them) & enemyCenter)) { // 沉底炮
                     score += BottomCannon;
                 }
-            }
-            if constexpr (Pt == ROOK)
-            {
-                if (pos.is_on_semiopen_file(Us, s))
-                    score += RookOnOpenFile[pos.is_on_semiopen_file(Them, s)];
             }
         }
         return score;
