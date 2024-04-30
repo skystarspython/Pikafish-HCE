@@ -191,7 +191,7 @@ namespace {
 
             if constexpr (Pt == CANNON) { // 炮的评估
                 int blocker = popcount(between_bb(s, ksq) & pos.pieces()) - 1;
-                const Bitboard originalAdvisor = square_bb(SQ_D0) | square_bb(SQ_D9) | square_bb(SQ_F0) | square_bb(SQ_F9);
+                constexpr Bitboard originalAdvisor = ((FileDBB | FileFBB) & (Rank0BB | Rank9BB));
                 Bitboard advisorBB = pos.pieces(Them, ADVISOR);
                 if (file_of(s) == FILE_E && (ksq == SQ_E0 || ksq == SQ_E9) && popcount(originalAdvisor & advisorBB) == 2) {
                     if (!blocker) { // 空头炮
@@ -232,12 +232,12 @@ namespace {
         constexpr Bitboard crossed = (Us == WHITE ? (Rank5BB | Rank6BB | Rank7BB | Rank8BB | Rank9BB) : (Rank0BB | Rank1BB | Rank2BB | Rank3BB | Rank4BB));
         constexpr Bitboard left = (FileABB | FileBBB | FileCBB | FileDBB);
         constexpr Bitboard right = (FileFBB | FileGBB | FileHBB | FileIBB);
+        Bitboard strongPieces = pos.pieces(Us, ROOK) | pos.pieces(Us, KNIGHT) | pos.pieces(Us, CANNON);
+        Bitboard attackedPieces = attackedBy[Them][PAWN] | attackedBy[Them][ADVISOR] | attackedBy[Them][BISHOP]
+            | attackedBy[Them][CANNON] | attackedBy[Them][KNIGHT] | (attackedBy[Them][ROOK] & ~attackedBy[Us][ALL_PIECES]);
         // 多子归边
         for (int i = 0; i <= 1; i++) {
             Bitboard side = (i == 0 ? left : right);
-            Bitboard strongPieces = pos.pieces(Us, ROOK) | pos.pieces(Us, KNIGHT) | pos.pieces(Us, CANNON);
-            Bitboard attackedPieces = attackedBy[Them][PAWN] | attackedBy[Them][ADVISOR] | attackedBy[Them][BISHOP]
-                | attackedBy[Them][CANNON] | attackedBy[Them][KNIGHT] | (attackedBy[Them][ROOK] & ~attackedBy[Us][ALL_PIECES]);
             int cnt = popcount(strongPieces & side & crossed & (~attackedPieces));
             cnt = cnt >= 5 ? 4 : cnt;
             score += PiecesOnOneSide[cnt];
@@ -331,10 +331,10 @@ int rule60_a = 118, rule60_b = 221;
 
 Value Eval::evaluate(const Position& pos, int* complexity) {
 
-  if (complexity)
-      *complexity = 0;
-
   Value v = Evaluation<NO_TRACE>(pos).value();
+
+  if (complexity)
+      *complexity = abs(v - pos.material_diff());
 
   // Damp down the evaluation linearly when shuffling
   v = v * (rule60_a - pos.rule60_count()) / rule60_b;
