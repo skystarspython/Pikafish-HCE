@@ -134,6 +134,8 @@ namespace {
         Bitboard attackedBy2[COLOR_NB];
 
         Score mobility[COLOR_NB] = { SCORE_ZERO, SCORE_ZERO };
+
+        Score protection[COLOR_NB] = { SCORE_ZERO, SCORE_ZERO };
     };
 
 
@@ -186,8 +188,14 @@ namespace {
             attackedBy[Us][ALL_PIECES] |= b;
 
             int mob = popcount(b & ~attackedBy[Them][PAWN]);
-            if constexpr (Pt != PAWN)
-                mobility[Us] += mobilityBonus[Pt][mob];
+            mobility[Us] += mobilityBonus[Pt][mob];
+
+            Bitboard protectedBB = b & pos.pieces(Us) & (~attackedBy2[Them]);
+            while (protectedBB) {
+                Square protectedSq = pop_lsb(protectedBB);
+                PieceType protectedPt = type_of(pos.piece_on(protectedSq));
+                protection[Us] += protectionBonus[Pt][protectedPt];
+            }
 
             if constexpr (Pt == CANNON) { // 炮的评估
                 int blocker = popcount(between_bb(s, ksq) & pos.pieces()) - 1;
@@ -305,6 +313,8 @@ namespace {
         score += threat<WHITE>() - threat<BLACK>();
 
         score += (mobility[WHITE] - mobility[BLACK]) / 100;
+
+        score += (protection[WHITE] - protection[BLACK]) / 100;
 
         if constexpr (T) {
             Trace::add(THREAT, threat<WHITE>(), threat<BLACK>());
