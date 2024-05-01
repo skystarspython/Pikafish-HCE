@@ -126,23 +126,28 @@ namespace {
 
     limits.startTime = now(); // The search starts as early as possible
 
-    while (is >> token)
-        if (token == "searchmoves") // Needs to be the last command on the line
-            while (is >> token)
-                limits.searchmoves.push_back(UCI::to_move(pos, token));
+    int nodeList[] = {100, 200, 300, 400, 600, 800, 1200, 1600, 2400, 3200, 4800, 6400, 9600, 12800, 19200, 25600, 51200, 76800, 102400};
 
-        else if (token == "wtime")     is >> limits.time[WHITE];
-        else if (token == "btime")     is >> limits.time[BLACK];
-        else if (token == "winc")      is >> limits.inc[WHITE];
-        else if (token == "binc")      is >> limits.inc[BLACK];
-        else if (token == "movestogo") is >> limits.movestogo;
-        else if (token == "depth")     is >> limits.depth;
-        else if (token == "nodes")     is >> limits.nodes;
-        else if (token == "movetime")  is >> limits.movetime;
-        else if (token == "mate")      is >> limits.mate;
-        else if (token == "perft")     is >> limits.perft;
-        else if (token == "infinite")  limits.infinite = 1;
-        else if (token == "ponder")    ponderMode = true;
+    if (Options["Skill Level"] < 20)
+        limits.nodes = nodeList[Options["Skill Level"]];
+    else
+        while (is >> token)
+            if (token == "searchmoves") // Needs to be the last command on the line
+                while (is >> token)
+                    limits.searchmoves.push_back(UCI::to_move(pos, token));
+
+            else if (token == "wtime")     is >> limits.time[WHITE];
+            else if (token == "btime")     is >> limits.time[BLACK];
+            else if (token == "winc")      is >> limits.inc[WHITE];
+            else if (token == "binc")      is >> limits.inc[BLACK];
+            else if (token == "movestogo") is >> limits.movestogo;
+            else if (token == "depth")     is >> limits.depth;
+            else if (token == "nodes")     is >> limits.nodes;
+            else if (token == "movetime")  is >> limits.movetime;
+            else if (token == "mate")      is >> limits.mate;
+            else if (token == "perft")     is >> limits.perft;
+            else if (token == "infinite")  limits.infinite = 1;
+            else if (token == "ponder")    ponderMode = true;
 
     Threads.start_thinking(pos, states, limits, ponderMode);
   }

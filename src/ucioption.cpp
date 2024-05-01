@@ -75,8 +75,6 @@ void init(OptionsMap& o) {
   o["Sixty Move Rule"]       << Option(true, on_rule60);
   o["Strict Three Fold"]     << Option(false, on_strict_three_fold);
   o["Chase With Check"]      << Option(true, on_chase_with_check);
-  o["UCI_LimitStrength"]     << Option(false);
-  o["UCI_Elo"]               << Option(1350, 1350, 2850);
 }
 
 
