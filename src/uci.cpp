@@ -129,7 +129,10 @@ namespace {
     int nodeList[] = {100, 200, 300, 400, 600, 800, 1200, 1600, 2400, 3200, 4800, 6400, 9600, 12800, 19200, 25600, 38400, 51200, 76800, 102400};
 
     if (Options["Skill Level"] < 20)
-        limits.nodes = nodeList[(int)Options["Skill Level"]];
+        if (pos.count<KNIGHT>() + pos.count<ROOK>() + pos.count<CANNON>() <= 3)
+            limits.nodes = nodeList[(int)Options["Skill Level"]] * 150 / 100;
+        else
+            limits.nodes = nodeList[(int)Options["Skill Level"]];
     else
         while (is >> token)
             if (token == "searchmoves") // Needs to be the last command on the line
