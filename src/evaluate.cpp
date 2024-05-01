@@ -78,10 +78,10 @@ namespace Trace {
     }
 }
 
-int generateRandomNumber() {
+int generateRandomNumber(int range) {
     static std::random_device rd;
     static std::mt19937 gen(rd());
-    std::uniform_int_distribution<> distrib(-5, 5);
+    std::uniform_int_distribution<> distrib(-range, range);
 
     return distrib(gen);
 }
@@ -348,7 +348,11 @@ Value Eval::evaluate(const Position& pos, int* complexity) {
   // Damp down the evaluation linearly when shuffling
   v = v * (rule60_a - pos.rule60_count()) / rule60_b;
 
-  v += generateRandomNumber();
+  int count = std::min(pos.count<ROOK>(WHITE) + pos.count<CANNON>(WHITE) + pos.count<KNIGHT>(WHITE),
+                       pos.count<ROOK>(BLACK) + pos.count<CANNON>(BLACK) + pos.count<KNIGHT>(BLACK));
+  constexpr int rangeTable[] = {0, 1, 2, 4, 8, 16, 32};
+  if(count > 0)
+    v += generateRandomNumber(rangeTable[count]);
 
   // Guarantee evaluation does not hit the mate range
   v = std::clamp(v, VALUE_MATED_IN_MAX_PLY + 1, VALUE_MATE_IN_MAX_PLY - 1);
