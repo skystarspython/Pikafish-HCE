@@ -26,6 +26,7 @@
 #include <iostream>
 #include <streambuf>
 #include <vector>
+#include <random>
 
 #include "bitboard.h"
 #include "evaluate.h"
@@ -75,6 +76,14 @@ namespace Trace {
         os << " | " << scores[t][WHITE] - scores[t][BLACK] << " |\n";
         return os;
     }
+}
+
+int generateRandomNumber() {
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distrib(-5, 5);
+
+    return distrib(gen);
 }
 
 using namespace Trace;
@@ -338,6 +347,8 @@ Value Eval::evaluate(const Position& pos, int* complexity) {
 
   // Damp down the evaluation linearly when shuffling
   v = v * (rule60_a - pos.rule60_count()) / rule60_b;
+
+  v += generateRandomNumber();
 
   // Guarantee evaluation does not hit the mate range
   v = std::clamp(v, VALUE_MATED_IN_MAX_PLY + 1, VALUE_MATE_IN_MAX_PLY - 1);
