@@ -282,6 +282,11 @@ namespace {
         // Probe the material hash table
         me = Material::probe(pos);
 
+        // If we have a specialized evaluation function for the current material
+        // configuration, call it and return.
+        if (me->specialized_eval_exists())
+            return me->evaluate(pos);
+
         Score score = pos.psq_score() + me->imbalance();
 
         if constexpr (T) {

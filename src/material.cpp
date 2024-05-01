@@ -21,6 +21,7 @@
 
 #include "material.h"
 #include "thread.h"
+#include "endgame.h"
 
 using namespace std;
 
@@ -57,9 +58,40 @@ namespace Stockfish {
 
 #undef S
 
+        // Endgame evaluation and scaling functions are accessed directly and not through
+        // the function maps because they correspond to more than one material hash key.
+        Endgame<KAABBKR>    EvaluateKAABBKR[] = { Endgame<KAABBKR>(WHITE),    Endgame<KAABBKR>(BLACK) };
+        Endgame<KPKP>       EvaluateKPKP[] =    { Endgame<KPKP>(WHITE),       Endgame<KPKP>(WHITE) };
+        Endgame<KBKN>       EvaluateKBKN[] =    { Endgame<KBKN>(WHITE),       Endgame<KBKN>(WHITE) };
+        Endgame<INSUFFICIENT_MATERIAL> EvaluateIM[] = { Endgame<INSUFFICIENT_MATERIAL>(WHITE), Endgame<INSUFFICIENT_MATERIAL>(BLACK) };
+
+        // Helper used to detect a given material distribution
+        // 车(任意士象) vs 士象全
+        bool is_KAABBKR(const Position& pos, Color us) {
+            return pos.material(~us) == AdvisorValueMg * 2 + BishopValueMg * 2
+                && pos.material(us) >= RookValueMg
+                && pos.count<ALL_PIECES>(us) == pos.count<ROOK>(us) + pos.count<ADVISOR>(us) + pos.count<BISHOP>(us) + 1;
+        }
+
+        // 兵 vs 卒
+        bool is_KPKP(const Position& pos, Color us) {
+            return us == WHITE && pos.material(us) == PawnValueMg && pos.material(~us) == PawnValueMg;
+        }
+
+        // 马(任意士象) vs 象
+        bool is_KBKN(const Position& pos, Color us) {
+            return pos.material(~us) == BishopValueMg && pos.material(us) >= KnightValueMg &&
+                pos.count<ALL_PIECES>(us) == pos.count<KNIGHT>(us) + pos.count<ADVISOR>(us) + pos.count<BISHOP>(us) + 1;
+        }
+
+        // 大子
+        Value major_material(const Position& pos) {
+            return pos.count<KNIGHT>() * KnightValueMg + pos.count<ROOK>() * RookValueMg + pos.count<CANNON>() * CannonValueMg;
+        }
+
         /// imbalance() calculates the imbalance by comparing the piece count of each
         /// piece type for both colors.
-
+        // 子力平衡
         template<Color Us>
         Score imbalance(const int pieceCount[][PIECE_TYPE_NB]) {
 
@@ -108,6 +140,62 @@ namespace Stockfish {
             Value sum = pos.material_sum();
             const int MidgameLimit = 15258, EndgameLimit = 3915;
             e->gamePhase = Phase(((sum - EndgameLimit) * PHASE_MIDGAME) / (MidgameLimit - EndgameLimit));
+
+            for (Color c : { WHITE, BLACK }) {
+                if (is_KAABBKR(pos, c))
+                {
+                    e->evaluationFunction = &EvaluateKAABBKR[c];
+                    return e;
+                }
+                if (is_KPKP(pos, c))
+                {
+                    e->evaluationFunction = &EvaluateKPKP[c];
+                    return e;
+                }
+                if (is_KBKN(pos, c))
+                {
+                    e->evaluationFunction = &EvaluateKBKN[c];
+                    return e;
+                }
+            }
+
+            // Draw by insufficient material
+            if ([&] {
+                if (pos.count<PAWN>() == 0)
+                {
+                    // No attacking pieces left
+                    if (!major_material(pos))
+                        return true;
+
+                        // Only one cannon left on the board
+                        if (major_material(pos) == CannonValueMg)
+                        {
+                            // No advisors left on the board
+                            if (pos.count<ADVISOR>() == 0)
+                                return true;
+
+                            // The side not holding the cannon can possess one advisor
+                            // The side holding the cannon should only have cannon
+                            if ((pos.count<ALL_PIECES>(WHITE) == 2 && pos.count<CANNON>(WHITE) == 1
+                                && pos.count<ADVISOR>(BLACK) == 1)
+                                || (pos.count<ALL_PIECES>(BLACK) == 2 && pos.count<CANNON>(BLACK) == 1
+                                    && pos.count<ADVISOR>(WHITE) == 1))
+                                return true;
+                        }
+
+                    // Two cannons left on the board, one for each side, but no other pieces left on the board
+                    if (pos.count<ALL_PIECES>() == 4 && pos.count<CANNON>(WHITE) == 1
+                        && pos.count<CANNON>(BLACK) == 1)
+                        return true;
+                }
+
+                return false;
+                }())
+            {
+                Color strongSide = pos.material_diff() > 0 ? pos.side_to_move() : ~pos.side_to_move();
+                e->evaluationFunction = &EvaluateIM[strongSide];
+                return e;
+            }
 
             const int pieceCount[COLOR_NB][PIECE_TYPE_NB] = {
             { pos.count<ROOK>(WHITE), pos.count<ADVISOR>(WHITE), pos.count<CANNON>(WHITE),
