@@ -85,7 +85,6 @@ namespace {
     constexpr Score HollowCannon = S(85, 91);
     constexpr Score CentralKnight = S(50, 53);
     constexpr Score BottomCannon = S(18, 8);
-    Score IronBolt = S(0, 0);
     constexpr Score AdvisorBishopPair = S(24, -43);
     constexpr Score CrossedPawn[3][6] = {
         { S(-56, -40), S(6, 24), S(11, 7), S(-29, 7), S(-9, -1), S(-4, -7) },
@@ -106,7 +105,6 @@ namespace {
     };
     TUNE(SetRange(-6000, 15000), mobilityBonus[1], mobilityBonus[2][0], mobilityBonus[2][1], mobilityBonus[2][2], mobilityBonus[2][3], mobilityBonus[2][4], mobilityBonus[3], mobilityBonus[5][0], mobilityBonus[5][1], mobilityBonus[5][2], mobilityBonus[5][3], mobilityBonus[5][4], mobilityBonus[5][5], mobilityBonus[5][6], mobilityBonus[5][7], mobilityBonus[5][8]
         , mobilityBonus[6][0], mobilityBonus[6][1], mobilityBonus[6][2], mobilityBonus[6][3], mobilityBonus[6][4]);
-    TUNE(SetRange(-100, 100), IronBolt);
 #undef S
 
     // Evaluation class computes and stores attacks tables and other working data
