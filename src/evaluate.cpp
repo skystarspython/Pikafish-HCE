@@ -204,7 +204,7 @@ namespace {
             Square s = pop_lsb(moveableBishop);
             abpAttacks[Them] |= attacks_bb<BISHOP>(s, pos.pieces());
         }
-        abpAttacks[Them] |= pawn_attacks_bb<Them>(pos.pieces(Us, PAWN));
+        abpAttacks[Them] |= pawn_attacks_bb<Them>(pos.pieces(Them, PAWN));
         mobilityArea[Us] = ~abpAttacks[Them];
     }
 
