@@ -85,6 +85,7 @@ namespace {
     constexpr Score HollowCannon = S(85, 91);
     constexpr Score CentralKnight = S(50, 53);
     constexpr Score BottomCannon = S(18, 8);
+    Score IronBolt = S(0, 0);
     constexpr Score AdvisorBishopPair = S(24, -43);
     constexpr Score CrossedPawn[3][6] = {
         { S(-56, -40), S(6, 24), S(11, 7), S(-29, 7), S(-9, -1), S(-4, -7) },
@@ -94,7 +95,7 @@ namespace {
     constexpr Score ConnectedPawn = S(5, -5);
     constexpr Score RookOnOpenFile[2] = { S(0, -8), S(14, 16) };
     constexpr Score PiecesOnOneSide[5] = { S(-3, 5), S(-13, 36), S(18, 26), S(9, 26), S(10, -4) };
-    constexpr Score mobilityBonus[PIECE_TYPE_NB][18] = {
+    Score mobilityBonus[PIECE_TYPE_NB][18] = {
         {}, // NO_PIECE_TYPE
         {S(-2655, -3045), S(423, -2895), S(-1144, -2170), S(155, -3012), S(-1067, -5183), S(1097, -3787), S(2037, -2581), S(2577, -3604), S(3512, -3371), S(3554, -5076), S(5818, -4178), S(6629, -946), S(8410, -3079), S(9004, -1200), S(11081, -3500), S(9035, -1212), S(11433, -3483), S(1686, -4329)}, // ROOK
         {S(1686, -4329), S(4461, 745), S(4657, 329), S(5853, 1929), S(9140, 275)}, // ADVISOR
@@ -103,6 +104,9 @@ namespace {
         {S(-582, -4894), S(2260, -2360), S(4002, -2435), S(4595, 1090), S(5389, 2949), S(9760, 3209), S(8500, 3453), S(11956, 6472), S(13619, 7657)}, // KNIGHT
         {S(1692, -2811), S(911, -1898), S(3017, -904), S(7134, 1537), S(9276, -1351)}, // BISHOP
     };
+    TUNE(SetRange(-6000, 15000), mobilityBonus[1], mobilityBonus[2][0], mobilityBonus[2][1], mobilityBonus[2][2], mobilityBonus[2][3], mobilityBonus[2][4], mobilityBonus[3], mobilityBonus[5][0], mobilityBonus[5][1], mobilityBonus[5][2], mobilityBonus[5][3], mobilityBonus[5][4], mobilityBonus[5][5], mobilityBonus[5][6], mobilityBonus[5][7], mobilityBonus[5][8]
+        , mobilityBonus[6][0], mobilityBonus[6][1], mobilityBonus[6][2], mobilityBonus[6][3], mobilityBonus[6][4]);
+    TUNE(SetRange(-100, 100), IronBolt);
 #undef S
 
     // Evaluation class computes and stores attacks tables and other working data
@@ -134,6 +138,11 @@ namespace {
         Bitboard attackedBy2[COLOR_NB];
 
         Score mobility[COLOR_NB] = { SCORE_ZERO, SCORE_ZERO };
+
+        Bitboard mobilityArea[COLOR_NB]{};
+
+        // Store the attacks from Advisors, Bishops and Pawns
+        Bitboard abpAttacks[COLOR_NB]{};
     };
 
 
@@ -145,7 +154,6 @@ namespace {
 
         constexpr Color     Them = ~Us;
         const Square ksq = pos.square<KING>(Us);
-        constexpr Bitboard LowRanks = (Us == WHITE ? Rank0BB | Rank1BB : Rank8BB | Rank9BB);
 
 
         // Initialize attackedBy[] for king and pawns
@@ -153,6 +161,17 @@ namespace {
         attackedBy[Us][PAWN] = pawn_attacks_bb<Us>(pos.pieces(Us, PAWN));
         attackedBy[Us][ALL_PIECES] = attackedBy[Us][KING] | attackedBy[Us][PAWN];
         attackedBy2[Us] = attackedBy[Us][KING] & attackedBy[Us][PAWN];
+        Bitboard moveableAdvisor = pos.pieces(Them, ADVISOR) & ~pos.blockers_for_king(Them);
+        Bitboard moveableBishop = pos.pieces(Them, BISHOP) & ~pos.blockers_for_king(Them);
+        while (moveableAdvisor) {
+            Square s = pop_lsb(moveableAdvisor);
+            abpAttacks[Them] |= attacks_bb<ADVISOR>(s);
+        }
+        while (moveableBishop) {
+            Square s = pop_lsb(moveableBishop);
+            abpAttacks[Them] |= attacks_bb<BISHOP>(s, pos.pieces());
+        }
+        mobilityArea[Us] = ~abpAttacks[Them];
     }
 
 
@@ -185,25 +204,31 @@ namespace {
             attackedBy[Us][Pt] |= b;
             attackedBy[Us][ALL_PIECES] |= b;
 
-            int mob = popcount(b & ~attackedBy[Them][PAWN]);
-            if constexpr (Pt != PAWN)
-                mobility[Us] += mobilityBonus[Pt][mob];
+            int mob = popcount(b & mobilityArea[Us]);
+            mobility[Us] += mobilityBonus[Pt][mob];
 
             if constexpr (Pt == CANNON) { // 炮的评估
-                int blocker = popcount(between_bb(s, ksq) & pos.pieces()) - 1;
+                int blockerCount = popcount(between_bb(s, ksq) & pos.pieces()) - 1;
                 constexpr Bitboard originalAdvisor = ((FileDBB | FileFBB) & (Rank0BB | Rank9BB));
                 Bitboard advisorBB = pos.pieces(Them, ADVISOR);
-                if (file_of(s) == FILE_E && (ksq == SQ_E0 || ksq == SQ_E9) && popcount(originalAdvisor & advisorBB) == 2) {
-                    if (!blocker) { // 空头炮
-                        score += HollowCannon;
+                if (file_of(s) == FILE_E && (ksq == SQ_E0 || ksq == SQ_E9)) {
+                    if (popcount(originalAdvisor & advisorBB) == 2) {
+                        if (!blockerCount) { // 空头炮
+                            score += HollowCannon;
+                        }
+                        if (blockerCount == 2 && (between_bb(s, ksq) & pos.pieces(Them, KNIGHT) & attackedBy[Them][KING])) { // 炮镇窝心马
+                            score += CentralKnight;
+                        }
                     }
-                    if (blocker == 2 && (between_bb(s, ksq) & pos.pieces(Them, KNIGHT) & attackedBy[Them][KING])) { // 炮镇窝心马
-                        score += CentralKnight;
+                    else if (blockerCount == 2 && pos.count<ADVISOR>(Them) + pos.count<BISHOP>(Them) == 4
+                        && popcount(between_bb(s, ksq) & pos.pieces(Them, ADVISOR, BISHOP)) == 2) {
+                        score += IronBolt;
                     }
                 }
                 Rank enemyBottom = (Us == WHITE ? RANK_9 : RANK_0);
                 Square enemyCenter = (Us == WHITE ? SQ_E8 : SQ_E1);
-                if (rank_of(s) == enemyBottom && !blocker && (ksq == SQ_E0 || ksq == SQ_E9) && (pos.pieces(Them) & enemyCenter)) { // 沉底炮
+                if (rank_of(s) == enemyBottom && !blockerCount && (ksq == SQ_E0 || ksq == SQ_E9)
+                    && (pos.pieces(Them) & enemyCenter)) { // 沉底炮
                     score += BottomCannon;
                 }
             }
