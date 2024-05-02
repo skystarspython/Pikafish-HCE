@@ -88,7 +88,7 @@ Value Endgame<KAABBKR>::operator()(const Position& pos) const {
     bool normalBishop = popcount(pos.pieces(weakSide, BISHOP) & (Rank0BB | Rank9BB)) == 1 &&
         popcount(pos.pieces(weakSide, BISHOP) & (Rank2BB | Rank7BB)) == 1;
     bool normalKing = ksq & (Rank0BB | Rank9BB);
-    if (normalAdvisor && normalBishop) {
+    if (normalAdvisor && normalBishop && normalKing) {
         v = Value(16);
     }
     else if (rookSq & (FileHBB | FileBBB)) {

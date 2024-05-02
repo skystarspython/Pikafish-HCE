@@ -38,6 +38,42 @@ using namespace std;
 
 namespace Stockfish {
 
+namespace Eval {
+
+  string currentEvalFileName = "None";
+
+  /// NNUE::init() tries to load a NNUE network at startup time, or when the engine
+  /// receives a UCI command "setoption name EvalFile value .*.nnue"
+  /// The name of the NNUE network is always retrieved from the EvalFile option.
+  /// We search the given network in two locations: in the active working directory and
+  /// in the engine directory.
+
+  void NNUE::init() {
+
+    string eval_file = string(Options["EvalFile"]);
+    if (eval_file.empty())
+        eval_file = EvalFileDefaultName;
+
+    vector<string> dirs = { "" , CommandLine::binaryDirectory };
+
+    for (string directory : dirs)
+        if (currentEvalFileName != eval_file)
+        {
+            ifstream stream(directory + eval_file, ios::binary);
+            stringstream ss = read_zipped_nnue(directory + eval_file);
+            if (load_eval(eval_file, stream) || load_eval(eval_file, ss))
+                currentEvalFileName = eval_file;
+        }
+  }
+
+  /// NNUE::verify() verifies that the last net used was loaded successfully
+  void NNUE::verify() {
+
+    return;
+  }
+}
+
+
 namespace Trace {
 
     enum Tracing { NO_TRACE, TRACE };
@@ -134,6 +170,11 @@ namespace {
         Bitboard attackedBy2[COLOR_NB];
 
         Score mobility[COLOR_NB] = { SCORE_ZERO, SCORE_ZERO };
+
+        Bitboard mobilityArea[COLOR_NB];
+
+        // Store the attacks from Advisors, Bishops and Pawns
+        Bitboard abpAttacks[COLOR_NB];
     };
 
 
@@ -145,7 +186,6 @@ namespace {
 
         constexpr Color     Them = ~Us;
         const Square ksq = pos.square<KING>(Us);
-        constexpr Bitboard LowRanks = (Us == WHITE ? Rank0BB | Rank1BB : Rank8BB | Rank9BB);
 
 
         // Initialize attackedBy[] for king and pawns
@@ -153,6 +193,19 @@ namespace {
         attackedBy[Us][PAWN] = pawn_attacks_bb<Us>(pos.pieces(Us, PAWN));
         attackedBy[Us][ALL_PIECES] = attackedBy[Us][KING] | attackedBy[Us][PAWN];
         attackedBy2[Us] = attackedBy[Us][KING] & attackedBy[Us][PAWN];
+        abpAttacks[Them] = mobilityArea[Us] = 0;
+        Bitboard moveableAdvisor = pos.pieces(Them, ADVISOR) & ~pos.blockers_for_king(Them);
+        Bitboard moveableBishop = pos.pieces(Them, BISHOP) & ~pos.blockers_for_king(Them);
+        while (moveableAdvisor) {
+            Square s = pop_lsb(moveableAdvisor);
+            abpAttacks[Them] |= attacks_bb<ADVISOR>(s);
+        }
+        while (moveableBishop) {
+            Square s = pop_lsb(moveableBishop);
+            abpAttacks[Them] |= attacks_bb<BISHOP>(s, pos.pieces());
+        }
+        abpAttacks[Them] |= pawn_attacks_bb<Them>(pos.pieces(Us, PAWN));
+        mobilityArea[Us] = ~abpAttacks[Them];
     }
 
 
@@ -185,25 +238,25 @@ namespace {
             attackedBy[Us][Pt] |= b;
             attackedBy[Us][ALL_PIECES] |= b;
 
-            int mob = popcount(b & ~attackedBy[Them][PAWN]);
-            if constexpr (Pt != PAWN)
-                mobility[Us] += mobilityBonus[Pt][mob];
+            int mob = popcount(b & mobilityArea[Us]);
+            mobility[Us] += mobilityBonus[Pt][mob];
 
             if constexpr (Pt == CANNON) { // 炮的评估
-                int blocker = popcount(between_bb(s, ksq) & pos.pieces()) - 1;
+                int blockerCount = popcount(between_bb(s, ksq) & pos.pieces()) - 1;
                 constexpr Bitboard originalAdvisor = ((FileDBB | FileFBB) & (Rank0BB | Rank9BB));
                 Bitboard advisorBB = pos.pieces(Them, ADVISOR);
                 if (file_of(s) == FILE_E && (ksq == SQ_E0 || ksq == SQ_E9) && popcount(originalAdvisor & advisorBB) == 2) {
-                    if (!blocker) { // 空头炮
+                    if (!blockerCount) { // 空头炮
                         score += HollowCannon;
                     }
-                    if (blocker == 2 && (between_bb(s, ksq) & pos.pieces(Them, KNIGHT) & attackedBy[Them][KING])) { // 炮镇窝心马
+                    if (blockerCount == 2 && (between_bb(s, ksq) & pos.pieces(Them, KNIGHT) & attackedBy[Them][KING])) { // 炮镇窝心马
                         score += CentralKnight;
                     }
                 }
                 Rank enemyBottom = (Us == WHITE ? RANK_9 : RANK_0);
                 Square enemyCenter = (Us == WHITE ? SQ_E8 : SQ_E1);
-                if (rank_of(s) == enemyBottom && !blocker && (ksq == SQ_E0 || ksq == SQ_E9) && (pos.pieces(Them) & enemyCenter)) { // 沉底炮
+                if (rank_of(s) == enemyBottom && !blockerCount && (ksq == SQ_E0 || ksq == SQ_E9)
+                    && (pos.pieces(Them) & enemyCenter)) { // 沉底炮
                     score += BottomCannon;
                 }
             }
@@ -272,11 +325,6 @@ namespace {
 
         // Probe the material hash table
         me = Material::probe(pos);
-
-        // If we have a specialized evaluation function for the current material
-        // configuration, call it and return.
-        if (me->specialized_eval_exists())
-            return me->evaluate(pos);
 
         Score score = pos.psq_score() + me->imbalance();
 

@@ -38,105 +38,105 @@
 
 using namespace Stockfish;
 
-const int futi_mar = 256;
-const int redu_1 = 1024;
-const int redu_2 = 798;
-const int redu_3 = 21864;
-const int st_bo_1 = 7;
-const int st_bo_2 = 276;
-const int st_bo_3 = 570;
-const int st_bo_4 = 2595;
-const int Futi_1 = 171;
-const int Numov_0 = 15748;
-const int Numov_1 = 11;
-const int Numov_2 = 16;
-const int Numov_3 = 128;
-const int Numov_4 = 42;
-const int Numov_5 = 282;
-const int Numov_6 = 2;
-const int Numov_9 = 678;
-const int probCut_1 = 164;
-const int probCut_2 = 66;
-const int probCut_3 = 221;
-const int comp_1 = 958;
-const int delt_1 = 10;
-const int delt_2 = 27642;
-const int exten_1 = 4;
-const int exten_2 = 2;
-const int exten_3 = 21;
-const int exten_4 = 11;
-const int exten_5 = 63;
-const int exten_6 = 3471;
-const int impro_1 = 171;
-const int Razo_1 = 445;
-const int Razo_2 = 465;
-const int statsc_1 = 5083;
-const int extrbon_1 = 56;
-const int futiba_1 = 88;
-const int posr60cou = 111;
-const int lmrse_1 = 39;
-const int lmrse_2 = 4;
-const int lmrse_3 = 662;
-const int lmrse_4 = 60;
-const int lmrse_5 = 6;
-const int opt_2 = 109;
-const int opt_3 = 137;
-const int opt_4 = 178;
-const int opt_5 = 481;
-const int decr_0 = 3;
-const int decr_1 = 2;
-const int decr_2 = 5;
-const int decr_3 = 1;
-const int decr_4 = 23;
-const int decr_5 = 5;
-const int decr_6 = 6375;
-const int decr_7 = 6186;
-const int decr_8 = 9;
-const int decr_9 = 23;
-const int improv_1 = 4;
-const int improv_2 = 2;
-const int improv_3 = 5;
-const int delt_3 = 4;
-const int delt_4 = 2;
-const int probdep_1 = 1;
-const int probdep_2 = 3;
-const int Futi_cap_0 = 8;
-const int Futi_cap_1 = 213;
-const int Futi_cap_2 = 317;
-const int Futi_cap_3 = 307;
-const int Futi_cap_4 = 42;
-const int Futi_cap_5 = 6;
-const int Futi_cap_6 = 8;
-const int Futi_cap_7 = 986;
-const int Futi_par_1 = 153;
-const int Futi_par_2 = 152;
-const int Futi_par_3 = 58;
-const int Futi_par_4 = 28;
-const int Futi_par_5 = 50;
-const int Futi_par_6 = 11;
-const int pvredu_1 = 1;
-const int pvredu_2 = 16;
-const int pvredu_3 = 2;
-const int cutredu_1 = 2;
-const int cutredu_2 = 23;
-const int cutredu_3 = 7;
-const int Futidep = 8;
-const int nuldep_1 = 3;
-const int nuldep_2 = 4;
-const int exten_7 = 1;
-const int exten_8 = 10;
-const int exten_9 = 2;
-const int exten_10 = 2;
-const int exten_11 = 1;
-const int exten_12 = 1;
-const int exten_13 = 1;
-const int exten_14 = 2;
-const int decr_10 = 6;
-const int decr_11 = 1;
-const int decr_12 = 1;
-const int decr_13 = 1;
-const int decr_14 = 3;
-const int decr_15 = 1;
+int futi_mar = 250;
+int redu_1 = 982;
+int redu_2 = 848;
+int redu_3 = 21605;
+int st_bo_1 = 7;
+int st_bo_2 = 262;
+int st_bo_3 = 533;
+int st_bo_4 = 2518;
+int Futi_1 = 170;
+int Numov_0 = 16205;
+int Numov_1 = 11;
+int Numov_2 = 16;
+int Numov_3 = 112;
+int Numov_4 = 39;
+int Numov_5 = 269;
+int Numov_6 = 2;
+int Numov_9 = 698;
+int probCut_1 = 182;
+int probCut_2 = 65;
+int probCut_3 = 230;
+int comp_1 = 956;
+int delt_1 = 9;
+int delt_2 = 27436;
+int exten_1 = 4;
+int exten_2 = 2;
+int exten_3 = 21;
+int exten_4 = 12;
+int exten_5 = 63;
+int exten_6 = 3387;
+int impro_1 = 176;
+int Razo_1 = 426;
+int Razo_2 = 451;
+int statsc_1 = 5367;
+int extrbon_1 = 56;
+int futiba_1 = 98;
+int posr60cou = 112;
+int lmrse_1 = 40;
+int lmrse_2 = 4;
+int lmrse_3 = 664;
+int lmrse_4 = 61;
+int lmrse_5 = 6;
+int opt_2 = 110;
+int opt_3 = 146;
+int opt_4 = 175;
+int opt_5 = 460;
+int decr_0 = 3;
+int decr_1 = 2;
+int decr_2 = 5;
+int decr_3 = 1;
+int decr_4 = 24;
+int decr_5 = 5;
+int decr_6 = 6973;
+int decr_7 = 6577;
+int decr_8 = 9;
+int decr_9 = 23;
+int improv_1 = 4;
+int improv_2 = 2;
+int improv_3 = 5;
+int delt_3 = 4;
+int delt_4 = 2;
+int probdep_1 = 1;
+int probdep_2 = 3;
+int Futi_cap_0 = 8;
+int Futi_cap_1 = 220;
+int Futi_cap_2 = 326;
+int Futi_cap_3 = 318;
+int Futi_cap_4 = 42;
+int Futi_cap_5 = 7;
+int Futi_cap_6 = 7;
+int Futi_cap_7 = 1192;
+int Futi_par_1 = 168;
+int Futi_par_2 = 162;
+int Futi_par_3 = 60;
+int Futi_par_4 = 27;
+int Futi_par_5 = 51;
+int Futi_par_6 = 12;
+int pvredu_1 = 1;
+int pvredu_2 = 16;
+int pvredu_3 = 2;
+int cutredu_1 = 2;
+int cutredu_2 = 26;
+int cutredu_3 = 7;
+int Futidep = 8;
+int nuldep_1 = 3;
+int nuldep_2 = 4;
+int exten_7 = 1;
+int exten_8 = 10;
+int exten_9 = 2;
+int exten_10 = 2;
+int exten_11 = 1;
+int exten_12 = 1;
+int exten_13 = 1;
+int exten_14 = 2;
+int decr_10 = 6;
+int decr_11 = 1;
+int decr_12 = 1;
+int decr_13 = 1;
+int decr_14 = 3;
+int decr_15 = 1;
 
 
 /*TUNE(futi_mar, redu_1, redu_2, redu_3, st_bo_1, st_bo_2, st_bo_3, st_bo_4, Futi_1, Numov_0, Numov_1,
@@ -150,16 +150,16 @@ Futidep, nuldep_1, nuldep_2, exten_7, exten_8, exten_9, exten_10, exten_11, exte
 
 
 
-const int falling_1 = 75;
-const int falling_2 = 694147;
-const int falling_3 = 8;
-const int falling_4 = 1967;
-const int falling_5 = 821;
-const int falling_6 = 1664;
-const int falling_7 = 2068;
-const int falling_8 = 323;
-const int falling_9 = 1852908;
-const int timeela_1 = 400;
+int falling_1 = 75;
+int falling_2 = 694147;
+int falling_3 = 8;
+int falling_4 = 1967;
+int falling_5 = 821;
+int falling_6 = 1664;
+int falling_7 = 2068;
+int falling_8 = 323;
+int falling_9 = 1852908;
+int timeela_1 = 400;
 
 namespace Stockfish {
 
@@ -243,6 +243,7 @@ namespace {
   uint64_t perft(Position& pos, Depth depth) {
 
     StateInfo st;
+    ASSERT_ALIGNED(&st, Eval::NNUE::CacheLineSize);
 
     uint64_t cnt, nodes = 0;
     const bool leaf = (depth == 2);
@@ -303,6 +304,8 @@ void MainThread::search() {
   Color us = rootPos.side_to_move();
   Time.init(Limits, us, rootPos.game_ply());
   TT.new_search();
+
+  Eval::NNUE::verify();
 
   if (rootMoves.empty())
   {
@@ -637,6 +640,7 @@ namespace {
 
     Move pv[MAX_PLY+1], capturesSearched[32], quietsSearched[64];
     StateInfo st;
+    ASSERT_ALIGNED(&st, Eval::NNUE::CacheLineSize);
 
     TTEntry* tte;
     Key posKey;
@@ -1435,6 +1439,7 @@ moves_loop: // When in check, search starts here
 
     Move pv[MAX_PLY+1];
     StateInfo st;
+    ASSERT_ALIGNED(&st, Eval::NNUE::CacheLineSize);
 
     TTEntry* tte;
     Key posKey;
@@ -1916,6 +1921,7 @@ string UCI::pv(const Position& pos, Depth depth) {
 bool RootMove::extract_ponder_from_tt(Position& pos) {
 
     StateInfo st;
+    ASSERT_ALIGNED(&st, Eval::NNUE::CacheLineSize);
 
     bool ttHit;
 
