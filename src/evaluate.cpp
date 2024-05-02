@@ -94,7 +94,7 @@ namespace {
     constexpr Score ConnectedPawn = S(5, -5);
     constexpr Score RookOnOpenFile[2] = { S(0, -8), S(14, 16) };
     constexpr Score PiecesOnOneSide[5] = { S(-3, 5), S(-13, 36), S(18, 26), S(9, 26), S(10, -4) };
-    Score mobilityBonus[PIECE_TYPE_NB][18] = {
+    constexpr Score mobilityBonus[PIECE_TYPE_NB][18] = {
         {}, // NO_PIECE_TYPE
         {S(-2655, -3045), S(423, -2895), S(-1144, -2170), S(155, -3012), S(-1067, -5183), S(1097, -3787), S(2037, -2581), S(2577, -3604), S(3512, -3371), S(3554, -5076), S(5818, -4178), S(6629, -946), S(8410, -3079), S(9004, -1200), S(11081, -3500), S(9035, -1212), S(11433, -3483), S(1686, -4329)}, // ROOK
         {S(1686, -4329), S(4461, 745), S(4657, 329), S(5853, 1929), S(9140, 275)}, // ADVISOR
@@ -103,8 +103,7 @@ namespace {
         {S(-582, -4894), S(2260, -2360), S(4002, -2435), S(4595, 1090), S(5389, 2949), S(9760, 3209), S(8500, 3453), S(11956, 6472), S(13619, 7657)}, // KNIGHT
         {S(1692, -2811), S(911, -1898), S(3017, -904), S(7134, 1537), S(9276, -1351)}, // BISHOP
     };
-    TUNE(SetRange(-6000, 15000), mobilityBonus[1], mobilityBonus[2][0], mobilityBonus[2][1], mobilityBonus[2][2], mobilityBonus[2][3], mobilityBonus[2][4], mobilityBonus[3], mobilityBonus[5][0], mobilityBonus[5][1], mobilityBonus[5][2], mobilityBonus[5][3], mobilityBonus[5][4], mobilityBonus[5][5], mobilityBonus[5][6], mobilityBonus[5][7], mobilityBonus[5][8]
-        , mobilityBonus[6][0], mobilityBonus[6][1], mobilityBonus[6][2], mobilityBonus[6][3], mobilityBonus[6][4]);
+    TUNE(SetRange(0, 100), HollowCannon);
 #undef S
 
     // Evaluation class computes and stores attacks tables and other working data
