@@ -73,12 +73,13 @@ namespace Eval {
   }
 }
 
+
 namespace Trace {
 
     enum Tracing { NO_TRACE, TRACE };
 
     enum Term { // The first 8 entries are reserved for PieceType
-        MATERIAL = 8, IMBALANCE, PAIR, MOBILITY, THREAT, PASSED, SPACE, WINNABLE, TOTAL, TERM_NB
+        MATERIAL = 8, IMBALANCE, PAIR, MOBILITY, THREAT, PIECES, WINNABLE, TOTAL, TERM_NB
     };
 
     Score scores[TERM_NB][COLOR_NB];
@@ -120,27 +121,27 @@ namespace {
     constexpr Score HollowCannon = S(85, 91);
     constexpr Score CentralKnight = S(50, 53);
     constexpr Score BottomCannon = S(18, 8);
+    Score IronBolt = S(0, 0);
     constexpr Score AdvisorBishopPair = S(24, -43);
-    constexpr Score CrossedPawn[6][3] = {
-        { S(-58, -7), S(19, 0), S(11, -11), S(-23, 6), S(-11, -7), S(-17, -13) },
-        { S(-58, -7), S(19, 0), S(11, -11), S(-23, 6), S(-11, -7), S(-17, -13) },
-        { S(-58, -7), S(19, 0), S(11, -11), S(-23, 6), S(-11, -7), S(-17, -13) }
+    constexpr Score CrossedPawn[3][6] = {
+        { S(-56, -40), S(6, 24), S(11, 7), S(-29, 7), S(-9, -1), S(-4, -7) },
+        { S(-68, -35), S(10, 12), S(9, 3), S(-16, 9), S(-14, 0), S(-36, -13) },
+        { S(-79, 5), S(40, -8), S(32, 1), S(-22, 9), S(-20, -16), S(-40, -20) }
     };
     constexpr Score ConnectedPawn = S(5, -5);
     constexpr Score RookOnOpenFile[2] = { S(0, -8), S(14, 16) };
     constexpr Score PiecesOnOneSide[5] = { S(-3, 5), S(-13, 36), S(18, 26), S(9, 26), S(10, -4) };
     Score mobilityBonus[PIECE_TYPE_NB][18] = {
         {}, // NO_PIECE_TYPE
-        {S(-2135, -2910), S(-1359, -2949), S(-583, -2988), S(193, -3027), S(969, -3066), S(1745, -3105), S(2521, -3144), S(3297, -3183), S(4073, -3222), S(4849, -3261), S(5625, -3300), S(6401, -3339), S(7177, -3378), S(7953, -3417), S(8729, -3456), S(9505, -3495), S(10281, -3534), S(11057, -3573)}, // ROOK
-        {S(-170, -1261), S(2139, -527), S(4448, 207), S(6757, 941), S(9066, 1675)}, // ADVISOR
-        {S(158, 144), S(58, 614), S(-42, 1084), S(-142, 1554), S(-242, 2024), S(-342, 2494), S(-442, 2964), S(-542, 3434), S(-642, 3904), S(-742, 4374), S(-842, 4844), S(-942, 5314), S(-1042, 5784), S(-1142, 6254), S(-1242, 6724), S(-1342, 7194), S(-1442, 7664), S(-1542, 8134)}, // CANNON
+        {S(-2655, -3045), S(423, -2895), S(-1144, -2170), S(155, -3012), S(-1067, -5183), S(1097, -3787), S(2037, -2581), S(2577, -3604), S(3512, -3371), S(3554, -5076), S(5818, -4178), S(6629, -946), S(8410, -3079), S(9004, -1200), S(11081, -3500), S(9035, -1212), S(11433, -3483), S(1686, -4329)}, // ROOK
+        {S(1686, -4329), S(4461, 745), S(4657, 329), S(5853, 1929), S(9140, 275)}, // ADVISOR
+        {S(672, 1629), S(-310, 1438), S(1799, 1728), S(840, 4456), S(115, 3069), S(1085, 3029), S(624, 3532), S(-1894, 3181), S(-1461, 3018), S(-461, 2196), S(-1398, 5107), S(568, 4268), S(-1408, 5591), S(-933, 5727), S(-2136, 6283), S(-478, 7094), S(35, 6741), S(-2309, 6672)}, // CANNON
         {}, // PAWN
-        {S(-254, -3141), S(1525, -1793), S(3304, -445), S(5083, 903), S(6862, 2251), S(8641, 3599), S(10420, 4947), S(12199, 6295), S(13978, 7643)}, // KNIGHT
-        {S(291, -2789), S(2285, -1817), S(4279, -845), S(6273, 127), S(8267, 1099)}, // BISHOP
+        {S(-582, -4894), S(2260, -2360), S(4002, -2435), S(4595, 1090), S(5389, 2949), S(9760, 3209), S(8500, 3453), S(11956, 6472), S(13619, 7657)}, // KNIGHT
+        {S(1692, -2811), S(911, -1898), S(3017, -904), S(7134, 1537), S(9276, -1351)}, // BISHOP
     };
-    TUNE(SetRange(-150,150),CrossedPawn);
-    TUNE(SetRange(-15000, 15000),mobilityBonus[1],mobilityBonus[2][0],mobilityBonus[2][1],mobilityBonus[2][2],mobilityBonus[2][3],mobilityBonus[2][4],mobilityBonus[3],mobilityBonus[5][0],mobilityBonus[5][1],mobilityBonus[5][2],mobilityBonus[5][3],mobilityBonus[5][4],mobilityBonus[5][5],mobilityBonus[5][6],mobilityBonus[5][7],mobilityBonus[5][8]
-    ,mobilityBonus[6][0],mobilityBonus[6][1],mobilityBonus[6][2],mobilityBonus[6][3],mobilityBonus[6][4]);
+    TUNE(mobilityBonus[1], mobilityBonus[2][0], mobilityBonus[2][1], mobilityBonus[2][2], mobilityBonus[2][3], mobilityBonus[2][4], mobilityBonus[3], mobilityBonus[5][0], mobilityBonus[5][1], mobilityBonus[5][2], mobilityBonus[5][3], mobilityBonus[5][4], mobilityBonus[5][5], mobilityBonus[5][6], mobilityBonus[5][7], mobilityBonus[5][8], mobilityBonus[6][0], mobilityBonus[6][1], mobilityBonus[6][2], mobilityBonus[6][3], mobilityBonus[6][4]);
+    TUNE(SetRange(-100, 100), IronBolt);
 #undef S
 
     // Evaluation class computes and stores attacks tables and other working data
@@ -172,6 +173,11 @@ namespace {
         Bitboard attackedBy2[COLOR_NB];
 
         Score mobility[COLOR_NB] = { SCORE_ZERO, SCORE_ZERO };
+
+        Bitboard mobilityArea[COLOR_NB];
+
+        // Store the attacks from Advisors, Bishops and Pawns
+        Bitboard abpAttacks[COLOR_NB];
     };
 
 
@@ -183,7 +189,6 @@ namespace {
 
         constexpr Color     Them = ~Us;
         const Square ksq = pos.square<KING>(Us);
-        constexpr Bitboard LowRanks = (Us == WHITE ? Rank0BB | Rank1BB : Rank8BB | Rank9BB);
 
 
         // Initialize attackedBy[] for king and pawns
@@ -191,6 +196,18 @@ namespace {
         attackedBy[Us][PAWN] = pawn_attacks_bb<Us>(pos.pieces(Us, PAWN));
         attackedBy[Us][ALL_PIECES] = attackedBy[Us][KING] | attackedBy[Us][PAWN];
         attackedBy2[Us] = attackedBy[Us][KING] & attackedBy[Us][PAWN];
+        abpAttacks[Them] = mobilityArea[Us] = 0;
+        Bitboard moveableAdvisor = pos.pieces(Them, ADVISOR) & ~pos.blockers_for_king(Them);
+        Bitboard moveableBishop = pos.pieces(Them, BISHOP) & ~pos.blockers_for_king(Them);
+        while (moveableAdvisor) {
+            Square s = pop_lsb(moveableAdvisor);
+            abpAttacks[Them] |= attacks_bb<ADVISOR>(s);
+        }
+        while (moveableBishop) {
+            Square s = pop_lsb(moveableBishop);
+            abpAttacks[Them] |= attacks_bb<BISHOP>(s, pos.pieces());
+        }
+        mobilityArea[Us] = ~abpAttacks[Them];
     }
 
 
@@ -223,25 +240,31 @@ namespace {
             attackedBy[Us][Pt] |= b;
             attackedBy[Us][ALL_PIECES] |= b;
 
-            int mob = popcount(b & ~attackedBy[Them][PAWN]);
-            if constexpr (Pt != PAWN)
-                mobility[Us] += mobilityBonus[Pt][mob];
+            int mob = popcount(b & mobilityArea[Us]);
+            mobility[Us] += mobilityBonus[Pt][mob];
 
-            if constexpr (Pt == CANNON) { // 炮的评估 (~5 Elo)
-                int blocker = popcount(between_bb(s, ksq) & pos.pieces()) - 1;
-                const Bitboard originalAdvisor = square_bb(SQ_D0) | square_bb(SQ_D9) | square_bb(SQ_F0) | square_bb(SQ_F9);
+            if constexpr (Pt == CANNON) { // 炮的评估
+                int blockerCount = popcount(between_bb(s, ksq) & pos.pieces()) - 1;
+                constexpr Bitboard originalAdvisor = ((FileDBB | FileFBB) & (Rank0BB | Rank9BB));
                 Bitboard advisorBB = pos.pieces(Them, ADVISOR);
-                if (file_of(s) == FILE_E && (ksq == SQ_E0 || ksq == SQ_E9) && popcount(originalAdvisor & advisorBB) == 2) {
-                    if (!blocker) { // 空头炮
-                        score += HollowCannon;
+                if (file_of(s) == FILE_E && (ksq == SQ_E0 || ksq == SQ_E9)) {
+                    if (popcount(originalAdvisor & advisorBB) == 2) {
+                        if (!blockerCount) { // 空头炮
+                            score += HollowCannon;
+                        }
+                        if (blockerCount == 2 && (between_bb(s, ksq) & pos.pieces(Them, KNIGHT) & attackedBy[Them][KING])) { // 炮镇窝心马
+                            score += CentralKnight;
+                        }
                     }
-                    if (blocker == 2 && (between_bb(s, ksq) & pos.pieces(Them, KNIGHT) & attackedBy[Them][KING])) { // 炮镇窝心马
-                        score += CentralKnight;
+                    else if (blockerCount == 2 && pos.count<ADVISOR>(Them) + pos.count<BISHOP>(Them) == 4
+                        && popcount(between_bb(s, ksq) & pos.pieces(Them, ADVISOR, BISHOP)) == 2) {
+                        score += IronBolt;
                     }
                 }
                 Rank enemyBottom = (Us == WHITE ? RANK_9 : RANK_0);
                 Square enemyCenter = (Us == WHITE ? SQ_E8 : SQ_E1);
-                if (rank_of(s) == enemyBottom && !blocker && (ksq == SQ_E0 || ksq == SQ_E9) && (pos.pieces(Them) & enemyCenter)) { // 沉底炮
+                if (rank_of(s) == enemyBottom && !blockerCount && (ksq == SQ_E0 || ksq == SQ_E9)
+                    && (pos.pieces(Them) & enemyCenter)) { // 沉底炮
                     score += BottomCannon;
                 }
             }
@@ -264,18 +287,18 @@ namespace {
         // 过河兵
         constexpr Bitboard crossedWithoutBottom = (Us == WHITE ? (Rank5BB | Rank6BB | Rank7BB | Rank8BB) : (Rank1BB | Rank2BB | Rank3BB | Rank4BB)); // 底线不算
         int crossedPawnCnt = popcount(crossedWithoutBottom & pos.pieces(Us, PAWN));
-        score += CrossedPawn[crossedPawnCnt][pos.count<ADVISOR>(Them)];
+        score += CrossedPawn[pos.count<ADVISOR>(Them)][crossedPawnCnt];
         // 牵手兵
         score += ConnectedPawn * popcount(shift<EAST>(pos.pieces(Us, PAWN)) & pos.pieces(Us, PAWN));
         constexpr Bitboard crossed = (Us == WHITE ? (Rank5BB | Rank6BB | Rank7BB | Rank8BB | Rank9BB) : (Rank0BB | Rank1BB | Rank2BB | Rank3BB | Rank4BB));
         constexpr Bitboard left = (FileABB | FileBBB | FileCBB | FileDBB);
         constexpr Bitboard right = (FileFBB | FileGBB | FileHBB | FileIBB);
+        Bitboard strongPieces = pos.pieces(Us, ROOK) | pos.pieces(Us, KNIGHT) | pos.pieces(Us, CANNON);
+        Bitboard attackedPieces = attackedBy[Them][PAWN] | attackedBy[Them][ADVISOR] | attackedBy[Them][BISHOP]
+            | attackedBy[Them][CANNON] | attackedBy[Them][KNIGHT] | (attackedBy[Them][ROOK] & ~attackedBy[Us][ALL_PIECES]);
         // 多子归边
         for (int i = 0; i <= 1; i++) {
             Bitboard side = (i == 0 ? left : right);
-            Bitboard strongPieces = pos.pieces(Us, ROOK) | pos.pieces(Us, KNIGHT) | pos.pieces(Us, CANNON);
-            Bitboard attackedPieces = attackedBy[Them][PAWN] | attackedBy[Them][ADVISOR] | attackedBy[Them][BISHOP]
-                | attackedBy[Them][CANNON] | attackedBy[Them][KNIGHT] | (attackedBy[Them][ROOK] & ~attackedBy[Us][ALL_PIECES]);
             int cnt = popcount(strongPieces & side & crossed & (~attackedPieces));
             cnt = cnt >= 5 ? 4 : cnt;
             score += PiecesOnOneSide[cnt];
@@ -322,11 +345,23 @@ namespace {
         initialize<WHITE>();
         initialize<BLACK>();
 
-        score += pieces<WHITE, KNIGHT>() - pieces<BLACK, KNIGHT>()
-            + pieces<WHITE, BISHOP>() - pieces<BLACK, BISHOP>()
-            + pieces<WHITE, ROOK>() - pieces<BLACK, ROOK>()
-            + pieces<WHITE, ADVISOR>() - pieces<BLACK, ADVISOR>()
-            + pieces<WHITE, CANNON>() - pieces<BLACK, CANNON>();
+        Score piecesWhite = pieces<WHITE, KNIGHT>()
+            + pieces<WHITE, BISHOP>()
+            + pieces<WHITE, ROOK>()
+            + pieces<WHITE, ADVISOR>()
+            + pieces<WHITE, CANNON>();
+
+        Score piecesBlack = pieces<BLACK, KNIGHT>()
+            + pieces<BLACK, BISHOP>()
+            + pieces<BLACK, ROOK>()
+            + pieces<BLACK, ADVISOR>()
+            + pieces<BLACK, CANNON>();
+
+        score += piecesWhite - piecesBlack;
+
+        if constexpr (T) {
+            Trace::add(PIECES, piecesWhite, piecesBlack);
+        }
 
         score += threat<WHITE>() - threat<BLACK>();
 
@@ -334,7 +369,7 @@ namespace {
 
         if constexpr (T) {
             Trace::add(THREAT, threat<WHITE>(), threat<BLACK>());
-            Trace::add(MOBILITY, mobility[WHITE], mobility[BLACK]);
+            Trace::add(MOBILITY, mobility[WHITE] / 100, mobility[BLACK] / 100);
             Trace::add(TOTAL, score);
         }
 
@@ -357,10 +392,10 @@ int rule60_a = 118, rule60_b = 221;
 
 Value Eval::evaluate(const Position& pos, int* complexity) {
 
-  if (complexity)
-      *complexity = 0;
-
   Value v = Evaluation<NO_TRACE>(pos).value();
+
+  if (complexity)
+      *complexity = abs(v - pos.material_diff());
 
   // Damp down the evaluation linearly when shuffling
   v = v * (rule60_a - pos.rule60_count()) / rule60_b;
@@ -476,15 +511,9 @@ std::string Eval::trace(Position& pos) {
         << "|   Material | " << Term(MATERIAL)
         << "|  Imbalance | " << Term(IMBALANCE)
         << "|       Pair | " << Term(PAIR)
-        << "|      Pawns | " << Term(PAWN)
-        << "|    Knights | " << Term(KNIGHT)
-        << "|    Bishops | " << Term(BISHOP)
-        << "|      Rooks | " << Term(ROOK)
+        << "|     Pieces | " << Term(PIECES)
         << "|   Mobility | " << Term(MOBILITY)
-        << "|King safety | " << Term(KING)
         << "|    Threats | " << Term(THREAT)
-        << "|     Passed | " << Term(PASSED)
-        << "|      Space | " << Term(SPACE)
         << "|   Winnable | " << Term(WINNABLE)
         << "+------------+-------------+-------------+-------------+\n"
         << "|      Total | " << Term(TOTAL)

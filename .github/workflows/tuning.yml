@@ -1,9 +1,9 @@
-name: Tune
+name: Tune-Test
 
 on:
   push:
     branches:
-      - tune
+      - tune-test
 
 jobs:
   linux:
