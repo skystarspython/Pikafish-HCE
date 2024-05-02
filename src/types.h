@@ -302,7 +302,7 @@ enum Value : int {
   RookValueMg    = 1173,  RookValueEg    = 1322,
   AdvisorValueMg = 204 ,  AdvisorValueEg = 101 ,
   CannonValueMg  = 868 ,  CannonValueEg  = 753 ,
-  PawnValueMg    = 187 ,  PawnValueEg    = 202 ,
+  PawnValueMg    = 147 ,  PawnValueEg    = 282 ,
   KnightValueMg  = 441 ,  KnightValueEg  = 874 ,
   BishopValueMg  = 257 ,  BishopValueEg  = 182 ,
 };
