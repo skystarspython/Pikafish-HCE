@@ -82,7 +82,7 @@ using namespace Trace;
 namespace {
 
 #define S(mg, eg) make_score(mg, eg)
-    constexpr Score HollowCannon = S(85, 91);
+    Score HollowCannon = S(85, 91);
     constexpr Score CentralKnight = S(50, 53);
     constexpr Score BottomCannon = S(18, 8);
     constexpr Score AdvisorBishopPair = S(24, -43);
