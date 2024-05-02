@@ -51,7 +51,6 @@ namespace Eval {
 
   } // namespace NNUE
 
-
 } // namespace Eval
 
 } // namespace Stockfish
