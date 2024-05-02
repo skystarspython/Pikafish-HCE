@@ -925,7 +925,7 @@ bool Position::rule_judge(Value& result, int ply) const {
 
             // Return a score if a position repeats once earlier but strictly
             // after the root, or repeats twice before or at the root.
-            if (stp->key == st->key && ++cnt == (!StrictThreeFold && ply > i ? 1 : 2))
+            if (stp->key == st->key && ++cnt == 1)
             {
                 if (perpetualThem || perpetualUs)
                 {
@@ -955,7 +955,7 @@ bool Position::rule_judge(Value& result, int ply) const {
 
                     // Return a score if a position repeats once earlier but strictly
                     // after the root, or repeats twice before or at the root.
-                    if (stp->key == st->key && ++cnt == (!StrictThreeFold && ply > i ? 1 : 2))
+                    if (stp->key == st->key && ++cnt == 1)
                     {
                         result = (chaseThem || chaseUs) ? (!chaseUs ? mate_in(ply) : !chaseThem ? mated_in(ply) : VALUE_DRAW) : VALUE_DRAW;
                         return true;
