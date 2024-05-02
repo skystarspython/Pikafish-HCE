@@ -139,10 +139,10 @@ namespace {
 
         Score mobility[COLOR_NB] = { SCORE_ZERO, SCORE_ZERO };
 
-        Bitboard mobilityArea[COLOR_NB]{};
+        Bitboard mobilityArea[COLOR_NB];
 
         // Store the attacks from Advisors, Bishops and Pawns
-        Bitboard abpAttacks[COLOR_NB]{};
+        Bitboard abpAttacks[COLOR_NB];
     };
 
 
@@ -161,6 +161,7 @@ namespace {
         attackedBy[Us][PAWN] = pawn_attacks_bb<Us>(pos.pieces(Us, PAWN));
         attackedBy[Us][ALL_PIECES] = attackedBy[Us][KING] | attackedBy[Us][PAWN];
         attackedBy2[Us] = attackedBy[Us][KING] & attackedBy[Us][PAWN];
+        abpAttacks[Them] = mobilityArea[Us] = 0;
         Bitboard moveableAdvisor = pos.pieces(Them, ADVISOR) & ~pos.blockers_for_king(Them);
         Bitboard moveableBishop = pos.pieces(Them, BISHOP) & ~pos.blockers_for_king(Them);
         while (moveableAdvisor) {
