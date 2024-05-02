@@ -82,7 +82,7 @@ using namespace Trace;
 namespace {
 
 #define S(mg, eg) make_score(mg, eg)
-    Score HollowCannon = S(85, 91);
+    constexpr Score HollowCannon = S(85, 91);
     constexpr Score CentralKnight = S(50, 53);
     constexpr Score BottomCannon = S(18, 8);
     constexpr Score AdvisorBishopPair = S(24, -43);
@@ -103,7 +103,7 @@ namespace {
         {S(-582, -4894), S(2260, -2360), S(4002, -2435), S(4595, 1090), S(5389, 2949), S(9760, 3209), S(8500, 3453), S(11956, 6472), S(13619, 7657)}, // KNIGHT
         {S(1692, -2811), S(911, -1898), S(3017, -904), S(7134, 1537), S(9276, -1351)}, // BISHOP
     };
-    TUNE(SetRange(0, 100), HollowCannon);
+    TUNE(SetRange(-15000, 15000),mobilityBonus[1],mobilityBonus[2][0],mobilityBonus[2][1],mobilityBonus[2][2],mobilityBonus[2][3],mobilityBonus[2][4],mobilityBonus[3],mobilityBonus[5][0],mobilityBonus[5][1],mobilityBonus[5][2],mobilityBonus[5][3],mobilityBonus[5][4],mobilityBonus[5][5],mobilityBonus[5][6],mobilityBonus[5][7],mobilityBonus[5][8],mobilityBonus[6][0],mobilityBonus[6][1],mobilityBonus[6][2],mobilityBonus[6][3],mobilityBonus[6][4]);
 #undef S
 
     // Evaluation class computes and stores attacks tables and other working data
@@ -273,6 +273,11 @@ namespace {
 
         // Probe the material hash table
         me = Material::probe(pos);
+
+        // If we have a specialized evaluation function for the current material
+        // configuration, call it and return.
+        if (me->specialized_eval_exists())
+            return me->evaluate(pos);
 
         Score score = pos.psq_score() + me->imbalance();
 

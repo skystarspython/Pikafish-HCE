@@ -22,6 +22,7 @@
 #include "misc.h"
 #include "position.h"
 #include "types.h"
+#include "endgame.h"
 
 namespace Stockfish::Material {
 
@@ -38,10 +39,11 @@ namespace Stockfish::Material {
 
         Score imbalance() const { return score; }
         Phase game_phase() const { return (Phase)gamePhase; }
+        bool specialized_eval_exists() const { return evaluationFunction != nullptr; }
+        Value evaluate(const Position& pos) const { return (*evaluationFunction)(pos); }
 
         Key key;
-
-        // side (e.g. KPKP, KBPsK)
+        const EndgameBase<Value>* evaluationFunction;
         Score score;
         int16_t gamePhase;
         uint8_t factor[COLOR_NB];
