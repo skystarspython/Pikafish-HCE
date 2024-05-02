@@ -221,10 +221,6 @@ namespace {
                             score += CentralKnight;
                         }
                     }
-                    else if (blockerCount == 2 && pos.count<ADVISOR>(Them) + pos.count<BISHOP>(Them) == 4
-                        && popcount(between_bb(s, ksq) & pos.pieces(Them, ADVISOR, BISHOP)) == 2) {
-                        score += IronBolt;
-                    }
                 }
                 Rank enemyBottom = (Us == WHITE ? RANK_9 : RANK_0);
                 Square enemyCenter = (Us == WHITE ? SQ_E8 : SQ_E1);
