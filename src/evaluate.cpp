@@ -96,16 +96,16 @@ namespace {
     constexpr Score HollowCannon = S(1285, 201);
     constexpr Score CentralKnight = S(1800, 1500);
     constexpr Score BottomCannon = S(418, 108);
-    constexpr Score IronBolt = S(300, 200);
-    constexpr Score PinnedRook = S(-500, -800);
+    constexpr Score IronBolt = S(400, 200);
+    constexpr Score PinnedRook = S(-600, -800);
     constexpr Score AdvisorBishopPair = S(204, 243);
     constexpr Score CrossedPawn[3][6] = {
         { S(-248, -40), S(116, 224), S(211, 317), S(429, 527), S(619, 651), S(814, 877) },
         { S(-116, -35), S(100, 202), S(159, 200), S(306, 400), S(414, 500), S(636, 713) },
         { S(-17, 5), S(60, -8), S(132, 111), S(222, 300), S(310, 400), S(440, 530) }
     };
-    constexpr Score ConnectedPawn = S(205, -5);
-    constexpr Score RookOnOpenFile[2] = { S(111, -8), S(114, 16) };
+    constexpr Score ConnectedPawn = S(205, 105);
+    constexpr Score RookOnOpenFile[2] = { S(11, 111), S(214, 161) };
     constexpr Score PiecesOnOneSide[5] = { S(-3, 5), S(50, 36), S(218, 126), S(819, 126), S(1520, 314) };
     constexpr Score mobilityBonus[PIECE_TYPE_NB][18] = {
         {}, // NO_PIECE_TYPE
