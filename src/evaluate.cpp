@@ -384,7 +384,7 @@ Value Eval::evaluate(const Position& pos, int* complexity) {
 
   int count = std::min(pos.count<ROOK>(WHITE) + pos.count<CANNON>(WHITE) + pos.count<KNIGHT>(WHITE),
                        pos.count<ROOK>(BLACK) + pos.count<CANNON>(BLACK) + pos.count<KNIGHT>(BLACK));
-  constexpr int rangeTable[] = {0, 2, 4, 8, 16, 32, 88};
+  constexpr int rangeTable[] = {0, 2, 4, 8, 16, 50, 100};
   if(count > 0)
     v += generateRandomNumber(rangeTable[count]);
 
