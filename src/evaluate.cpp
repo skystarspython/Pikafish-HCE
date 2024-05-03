@@ -96,8 +96,8 @@ namespace {
     constexpr Score HollowCannon = S(1285, 201);
     constexpr Score CentralKnight = S(1800, 1500);
     constexpr Score BottomCannon = S(418, 108);
-    constexpr Score IronBolt = S(0, 0);
-    constexpr Score PinnedRook = S(0, 0);
+    constexpr Score IronBolt = S(300, 200);
+    constexpr Score PinnedRook = S(-500, -800);
     constexpr Score AdvisorBishopPair = S(204, 243);
     constexpr Score CrossedPawn[3][6] = {
         { S(-248, -40), S(116, 224), S(211, 317), S(429, 527), S(619, 651), S(814, 877) },
