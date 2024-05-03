@@ -196,20 +196,27 @@ namespace {
             mobility[Us] += mobilityBonus[Pt][mob];
 
             if constexpr (Pt == CANNON) { // 炮的评估
-                int blocker = popcount(between_bb(s, ksq) & pos.pieces()) - 1;
+                int blockerCount = popcount(between_bb(s, ksq) & pos.pieces()) - 1;
                 constexpr Bitboard originalAdvisor = ((FileDBB | FileFBB) & (Rank0BB | Rank9BB));
                 Bitboard advisorBB = pos.pieces(Them, ADVISOR);
-                if (file_of(s) == FILE_E && (ksq == SQ_E0 || ksq == SQ_E9) && popcount(originalAdvisor & advisorBB) == 2) {
-                    if (!blocker) { // 空头炮
-                        score += HollowCannon;
+                if (file_of(s) == FILE_E && (ksq == SQ_E0 || ksq == SQ_E9)) {
+                    if (popcount(originalAdvisor & advisorBB) == 2) {
+                        if (!blockerCount) { // 空头炮
+                            score += HollowCannon;
+                        }
+                        if (blockerCount == 2 && (between_bb(s, ksq) & pos.pieces(Them, KNIGHT) & attackedBy[Them][KING])) { // 炮镇窝心马
+                            score += CentralKnight;
+                        }
                     }
-                    if (blocker == 2 && (between_bb(s, ksq) & pos.pieces(Them, KNIGHT) & attackedBy[Them][KING])) { // 炮镇窝心马
-                        score += CentralKnight;
+                    else if (blockerCount == 2 && pos.count<ADVISOR>(Them) + pos.count<BISHOP>(Them) == 4 // 铁门栓
+                        && popcount(between_bb(s, ksq) & pos.pieces(Them, ADVISOR, BISHOP)) == 2) {
+                        score += IronBolt;
                     }
                 }
                 Rank enemyBottom = (Us == WHITE ? RANK_9 : RANK_0);
                 Square enemyCenter = (Us == WHITE ? SQ_E8 : SQ_E1);
-                if (rank_of(s) == enemyBottom && !blocker && (ksq == SQ_E0 || ksq == SQ_E9) && (pos.pieces(Them) & enemyCenter)) { // 沉底炮
+                if (rank_of(s) == enemyBottom && !blockerCount && (ksq == SQ_E0 || ksq == SQ_E9)
+                    && (pos.pieces(Them) & enemyCenter)) { // 沉底炮
                     score += BottomCannon;
                 }
             }
