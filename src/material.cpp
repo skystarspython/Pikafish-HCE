@@ -161,36 +161,36 @@ namespace Stockfish {
 
             // Draw by insufficient material
             if ([&] {
-                        if (pos.count<PAWN>() == 0)
+                if (pos.count<PAWN>() == 0)
+                {
+                    // No attacking pieces left
+                    if (!major_material(pos))
+                        return true;
+
+                        // Only one cannon left on the board
+                        if (major_material(pos) == CannonValueMg)
                         {
-                            // No attacking pieces left
-                            if (!major_material(pos))
+                            // No advisors left on the board
+                            if (pos.count<ADVISOR>() == 0)
                                 return true;
 
-                            // Only one cannon left on the board
-                            if (major_material(pos) == CannonValueMg)
-                            {
-                                // No advisors left on the board
-                                if (pos.count<ADVISOR>() == 0)
-                                    return true;
-
-                                // The side not holding the cannon can possess one advisor
-                                // The side holding the cannon should only have cannon
-                                if ((pos.count<ALL_PIECES>(WHITE) == 2 && pos.count<CANNON>(WHITE) == 1
-                                    && pos.count<ADVISOR>(BLACK) == 1)
-                                    || (pos.count<ALL_PIECES>(BLACK) == 2 && pos.count<CANNON>(BLACK) == 1
-                                        && pos.count<ADVISOR>(WHITE) == 1))
-                                    return true;
-                            }
-
-                            // Two cannons left on the board, one for each side, but no other pieces left on the board
-                            if (pos.count<ALL_PIECES>() == 4 && pos.count<CANNON>(WHITE) == 1
-                                && pos.count<CANNON>(BLACK) == 1)
+                            // The side not holding the cannon can possess one advisor
+                            // The side holding the cannon should only have cannon
+                            if ((pos.count<ALL_PIECES>(WHITE) == 2 && pos.count<CANNON>(WHITE) == 1
+                                && pos.count<ADVISOR>(BLACK) == 1)
+                                || (pos.count<ALL_PIECES>(BLACK) == 2 && pos.count<CANNON>(BLACK) == 1
+                                    && pos.count<ADVISOR>(WHITE) == 1))
                                 return true;
                         }
 
-                        return false;
-                    }())
+                    // Two cannons left on the board, one for each side, but no other pieces left on the board
+                    if (pos.count<ALL_PIECES>() == 4 && pos.count<CANNON>(WHITE) == 1
+                        && pos.count<CANNON>(BLACK) == 1)
+                        return true;
+                }
+
+                return false;
+                }())
             {
                 Color strongSide = pos.material_diff() > 0 ? pos.side_to_move() : ~pos.side_to_move();
                 e->evaluationFunction = &EvaluateIM[strongSide];

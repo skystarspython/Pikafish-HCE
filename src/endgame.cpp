@@ -25,6 +25,22 @@
 
 namespace Stockfish {
 
+namespace {
+
+  // Map the square as if strongSide is white and strongSide's only pawn
+  // is on the left half of the board.
+  Square normalize(const Position& pos, Color strongSide, Square sq) {
+
+    assert(pos.count<PAWN>(strongSide) == 1);
+
+    if (file_of(pos.square<PAWN>(strongSide)) >= FILE_E)
+        sq = flip_file(sq);
+
+    return strongSide == WHITE ? sq : flip_rank(sq);
+  }
+
+} // namespace
+
 template<>
 Value Endgame<KAABBKR>::operator()(const Position& pos) const {
 
@@ -72,7 +88,7 @@ Value Endgame<KAABBKR>::operator()(const Position& pos) const {
     bool normalBishop = popcount(pos.pieces(weakSide, BISHOP) & (Rank0BB | Rank9BB)) == 1 &&
         popcount(pos.pieces(weakSide, BISHOP) & (Rank2BB | Rank7BB)) == 1;
     bool normalKing = ksq & (Rank0BB | Rank9BB);
-    if (normalAdvisor && normalBishop && normalKing) {
+    if (normalAdvisor && normalBishop) {
         v = Value(16);
     }
     else if (rookSq & (FileHBB | FileBBB)) {

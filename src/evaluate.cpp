@@ -51,11 +51,9 @@ namespace Trace {
 
     double to_cp(Value v) { return double(v) / PawnValueEg; }
 
-    /*
-    // unused function
     static void add(int idx, Color c, Score s) {
         scores[idx][c] = s;
-    }*/
+    }
 
     static void add(int idx, Score w, Score b = SCORE_ZERO) {
         scores[idx][WHITE] = w;
@@ -155,7 +153,11 @@ namespace {
 
     template<Tracing T> template<Color Us>
     void Evaluation<T>::initialize() {
+
+        constexpr Color     Them = ~Us;
         const Square ksq = pos.square<KING>(Us);
+        constexpr Bitboard LowRanks = (Us == WHITE ? Rank0BB | Rank1BB : Rank8BB | Rank9BB);
+
 
         // Initialize attackedBy[] for king and pawns
         attackedBy[Us][KING] = attacks_bb<KING>(ksq);
@@ -171,6 +173,8 @@ namespace {
     Score Evaluation<T>::pieces() {
 
         constexpr Color Them = ~Us;
+        constexpr Direction Up   = pawn_push(Us);
+        constexpr Direction Down = -Up;
         const Square ksq = pos.square<KING>(Them);
         Bitboard b1 = pos.pieces(Us, Pt);
         Bitboard b;
@@ -193,7 +197,8 @@ namespace {
             attackedBy[Us][ALL_PIECES] |= b;
 
             int mob = popcount(b & ~attackedBy[Them][PAWN]);
-            mobility[Us] += mobilityBonus[Pt][mob];
+            if constexpr (Pt != PAWN)
+                mobility[Us] += mobilityBonus[Pt][mob];
 
             if constexpr (Pt == CANNON) { // 炮的评估
                 int blockerCount = popcount(between_bb(s, ksq) & pos.pieces()) - 1;
@@ -370,7 +375,7 @@ using namespace Trace;
 
 /// evaluate() is the evaluator for the outer world. It returns a static
 /// evaluation of the position from the point of view of the side to move.
-constexpr int rule60_a = 118, rule60_b = 221;
+int rule60_a = 118, rule60_b = 221;
 
 Value Eval::evaluate(const Position& pos, int* complexity) {
 
@@ -436,6 +441,8 @@ std::string Eval::trace(Position& pos) {
     std::stringstream ss;
     ss << std::showpoint << std::noshowpos << std::fixed << std::setprecision(2);
 
+    Value v;
+
     // Reset any global variable used in eval
     pos.this_thread()->bestValue = VALUE_ZERO;
     pos.this_thread()->optimism[WHITE] = VALUE_ZERO;
@@ -472,6 +479,7 @@ std::string Eval::trace(Position& pos) {
             Value v = VALUE_NONE;
             if (pc != NO_PIECE && type_of(pc) != KING)
             {
+                auto st = pos.state();
                 pos.remove_piece(sq);
                 Value eval = evaluate(pos);
                 eval = pos.side_to_move() == WHITE ? eval : -eval;
@@ -485,7 +493,7 @@ std::string Eval::trace(Position& pos) {
         ss << board[row] << '\n';
     ss << '\n';
 
-    Value v = Evaluation<TRACE>(pos).value();
+    v = Evaluation<TRACE>(pos).value();
 
     ss << std::showpoint << std::noshowpos << std::fixed << std::setprecision(2)
         << " Contributing terms for the classical eval:\n"
@@ -508,7 +516,7 @@ std::string Eval::trace(Position& pos) {
 
     v = evaluate(pos);
     v = pos.side_to_move() == WHITE ? v : -v;
-    ss << "Final evaluation       " << to_cp(v) << " (white side) [with optimism, ...]\n";
+    ss << "Final evaluation       " << to_cp(v) << " (white side) [with scaled NNUE, optimism, ...]\n";
 
     return ss.str();
 }

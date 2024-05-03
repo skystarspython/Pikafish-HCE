@@ -62,6 +62,8 @@ SRCS = benchmark.cpp bitboard.cpp evaluate.cpp main.cpp material.cpp \
 
 OBJS = $(notdir $(SRCS:.cpp=.o))
 
+VPATH = compression:nnue:nnue/features
+
 ### ==========================================================================
 ### Section 2. High-level Configuration
 ### ==========================================================================
@@ -828,12 +830,12 @@ clean: objclean profileclean
 
 # clean binaries and objects
 objclean:
-	@rm -f pikafish pikafish.exe *.o ./compression/*.o
+	@rm -f pikafish pikafish.exe *.o ./compression/*.o ./nnue/*.o ./nnue/features/*.o
 
 # clean auxiliary profiling files
 profileclean:
 	@rm -rf profdir
-	@rm -f bench.txt *.gcda *.gcno *.s
+	@rm -f bench.txt *.gcda *.gcno ./compression/*.gcda ./nnue/*.gcda ./nnue/features/*.gcda *.s
 	@rm -f pikafish.profdata *.profraw
 	@rm -f pikafish.*args*
 	@rm -f pikafish.*lt*

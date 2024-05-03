@@ -152,6 +152,9 @@ public:
   bool pos_is_ok() const;
   void flip();
 
+  // Used by NNUE
+  StateInfo* state() const;
+
   void put_piece(Piece pc, Square s);
   void remove_piece(Square s);
 
@@ -373,6 +376,11 @@ inline void Position::move_piece(Square from, Square to) {
 
 inline void Position::do_move(Move m, StateInfo& newSt) {
   do_move(m, newSt, gives_check(m));
+}
+
+inline StateInfo* Position::state() const {
+
+  return st;
 }
 
 inline Position& Position::set(const Position& pos, StateInfo* si, Thread* th) {
