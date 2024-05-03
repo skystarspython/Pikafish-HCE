@@ -772,7 +772,7 @@ namespace {
         ss->staticEval = eval = tte->eval();
         if (eval == VALUE_NONE)
             ss->staticEval = eval = evaluate(pos, &complexity);
-        else // Fall back to material complexity for TT hits, the NNUE complexity is lost
+        else // Fall back to material complexity for TT hits, the complexity is lost
             complexity = abs(ss->staticEval - pos.material_diff());
 
         // ttValue can be used as a better position evaluation (~4 Elo)
@@ -1888,7 +1888,7 @@ string UCI::pv(const Position& pos, Depth depth) {
          << " depth "    << d
          << " seldepth " << rootMoves[i].selDepth
          << " multipv "  << i + 1
-         << " score "    << UCI::value(v, pos.game_ply());
+         << " score "    << UCI::value(v);
 
       if (i == pvIdx && updated) // previous-scores are exact
           ss << (rootMoves[i].scoreLowerbound ? " lowerbound" : (rootMoves[i].scoreUpperbound ? " upperbound" : ""));
