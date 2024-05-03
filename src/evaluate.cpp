@@ -96,6 +96,8 @@ namespace {
     constexpr Score HollowCannon = S(1285, 201);
     constexpr Score CentralKnight = S(1800, 1500);
     constexpr Score BottomCannon = S(418, 108);
+    constexpr Score IronBolt = S(0, 0);
+    constexpr Score PinnedRook = S(0, 0);
     constexpr Score AdvisorBishopPair = S(204, 243);
     constexpr Score CrossedPawn[3][6] = {
         { S(-248, -40), S(116, 224), S(211, 317), S(429, 527), S(619, 651), S(814, 877) },
@@ -194,20 +196,27 @@ namespace {
             mobility[Us] += mobilityBonus[Pt][mob];
 
             if constexpr (Pt == CANNON) { // 炮的评估
-                int blocker = popcount(between_bb(s, ksq) & pos.pieces()) - 1;
+                int blockerCount = popcount(between_bb(s, ksq) & pos.pieces()) - 1;
                 constexpr Bitboard originalAdvisor = ((FileDBB | FileFBB) & (Rank0BB | Rank9BB));
                 Bitboard advisorBB = pos.pieces(Them, ADVISOR);
-                if (file_of(s) == FILE_E && (ksq == SQ_E0 || ksq == SQ_E9) && popcount(originalAdvisor & advisorBB) == 2) {
-                    if (!blocker) { // 空头炮
-                        score += HollowCannon;
+                if (file_of(s) == FILE_E && (ksq == SQ_E0 || ksq == SQ_E9)) {
+                    if (popcount(originalAdvisor & advisorBB) == 2) {
+                        if (!blockerCount) { // 空头炮
+                            score += HollowCannon;
+                        }
+                        if (blockerCount == 2 && (between_bb(s, ksq) & pos.pieces(Them, KNIGHT) & attackedBy[Them][KING])) { // 炮镇窝心马
+                            score += CentralKnight;
+                        }
                     }
-                    if (blocker == 2 && (between_bb(s, ksq) & pos.pieces(Them, KNIGHT) & attackedBy[Them][KING])) { // 炮镇窝心马
-                        score += CentralKnight;
+                    else if (blockerCount == 2 && pos.count<ADVISOR>(Them) + pos.count<BISHOP>(Them) == 4 // 铁门栓
+                        && popcount(between_bb(s, ksq) & pos.pieces(Them, ADVISOR, BISHOP)) == 2) {
+                        score += IronBolt;
                     }
                 }
                 Rank enemyBottom = (Us == WHITE ? RANK_9 : RANK_0);
                 Square enemyCenter = (Us == WHITE ? SQ_E8 : SQ_E1);
-                if (rank_of(s) == enemyBottom && !blocker && (ksq == SQ_E0 || ksq == SQ_E9) && (pos.pieces(Them) & enemyCenter)) { // 沉底炮
+                if (rank_of(s) == enemyBottom && !blockerCount && (ksq == SQ_E0 || ksq == SQ_E9)
+                    && (pos.pieces(Them) & enemyCenter)) { // 沉底炮
                     score += BottomCannon;
                 }
             }
@@ -215,6 +224,29 @@ namespace {
             {
                 if (pos.is_on_semiopen_file(Us, s))
                     score += RookOnOpenFile[pos.is_on_semiopen_file(Them, s)];
+                Bitboard enemyRooks = pos.pieces(Them, ROOK);
+                Bitboard ourRookFileRank = file_bb(file_of(s)) | rank_bb(rank_of(s));
+                Square anotherRook = lsb(pos.pieces(Us, ROOK) ^ s);
+                if ((s & ~attackedBy[Us][ALL_PIECES]) && (s & ~attacks_bb<ROOK>(anotherRook, pos.pieces()))) {
+                    enemyRooks = enemyRooks & ourRookFileRank;
+                    while (enemyRooks) {
+                        Square enemyRookSq = pop_lsb(enemyRooks);
+                        int blockerCount = popcount(between_bb(s, enemyRookSq) & pos.pieces()) - 1;
+                        if (blockerCount != 1)
+                            break;
+                        Bitboard knightBB = between_bb(s, enemyRookSq) & pos.pieces(Us, KNIGHT);
+                        Bitboard cannonBB = between_bb(s, enemyRookSq) & pos.pieces(Us, CANNON);
+                        if (knightBB | cannonBB) {
+                            if (knightBB) {
+                                Square knightSq = lsb(knightBB);
+                                Bitboard knightAttacks = attacks_bb<KNIGHT>(knightSq, pos.pieces());
+                                if (knightAttacks & attacks_bb<KNIGHT_TO>(s, pos.pieces()))
+                                    break;
+                            }
+                            score += PinnedRook;
+                        }
+                    }
+                }
             }
         }
         return score;
@@ -295,15 +327,17 @@ namespace {
 
         Score piecesWhite = pieces<WHITE, KNIGHT>()
             + pieces<WHITE, BISHOP>()
-            + pieces<WHITE, ROOK>()
             + pieces<WHITE, ADVISOR>()
             + pieces<WHITE, CANNON>();
 
+        piecesWhite += pieces<WHITE, ROOK>();
+
         Score piecesBlack = pieces<BLACK, KNIGHT>()
             + pieces<BLACK, BISHOP>()
-            + pieces<BLACK, ROOK>()
             + pieces<BLACK, ADVISOR>()
             + pieces<BLACK, CANNON>();
+
+        piecesBlack += pieces<BLACK, ROOK>();
 
         score += piecesWhite - piecesBlack;
 
