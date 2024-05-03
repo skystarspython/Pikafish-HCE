@@ -219,7 +219,7 @@ namespace {
                     score += RookOnOpenFile[pos.is_on_semiopen_file(Them, s)];
                 Bitboard enemyRooks = pos.pieces(Them, ROOK);
                 Bitboard ourRookFileRank = file_bb(file_of(s)) | rank_bb(rank_of(s));
-                if (s & ~attackedBy[Us][ALL_PIECES]) {
+                if ((s & ~attackedBy[Us][ALL_PIECES]) && !(attacks_bb<ROOK>(s, pos.pieces()) & pos.pieces(Us, ROOK))) {
                     enemyRooks = enemyRooks & ourRookFileRank;
                     while (enemyRooks) {
                         Square enemyRookSq = pop_lsb(enemyRooks);
