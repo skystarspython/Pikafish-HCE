@@ -196,27 +196,20 @@ namespace {
             mobility[Us] += mobilityBonus[Pt][mob];
 
             if constexpr (Pt == CANNON) { // 炮的评估
-                int blockerCount = popcount(between_bb(s, ksq) & pos.pieces()) - 1;
+                int blocker = popcount(between_bb(s, ksq) & pos.pieces()) - 1;
                 constexpr Bitboard originalAdvisor = ((FileDBB | FileFBB) & (Rank0BB | Rank9BB));
                 Bitboard advisorBB = pos.pieces(Them, ADVISOR);
-                if (file_of(s) == FILE_E && (ksq == SQ_E0 || ksq == SQ_E9)) {
-                    if (popcount(originalAdvisor & advisorBB) == 2) {
-                        if (!blockerCount) { // 空头炮
-                            score += HollowCannon;
-                        }
-                        if (blockerCount == 2 && (between_bb(s, ksq) & pos.pieces(Them, KNIGHT) & attackedBy[Them][KING])) { // 炮镇窝心马
-                            score += CentralKnight;
-                        }
+                if (file_of(s) == FILE_E && (ksq == SQ_E0 || ksq == SQ_E9) && popcount(originalAdvisor & advisorBB) == 2) {
+                    if (!blocker) { // 空头炮
+                        score += HollowCannon;
                     }
-                    else if (blockerCount == 2 && pos.count<ADVISOR>(Them) + pos.count<BISHOP>(Them) == 4 // 铁门栓
-                        && popcount(between_bb(s, ksq) & pos.pieces(Them, ADVISOR, BISHOP)) == 2) {
-                        score += IronBolt;
+                    if (blocker == 2 && (between_bb(s, ksq) & pos.pieces(Them, KNIGHT) & attackedBy[Them][KING])) { // 炮镇窝心马
+                        score += CentralKnight;
                     }
                 }
                 Rank enemyBottom = (Us == WHITE ? RANK_9 : RANK_0);
                 Square enemyCenter = (Us == WHITE ? SQ_E8 : SQ_E1);
-                if (rank_of(s) == enemyBottom && !blockerCount && (ksq == SQ_E0 || ksq == SQ_E9)
-                    && (pos.pieces(Them) & enemyCenter)) { // 沉底炮
+                if (rank_of(s) == enemyBottom && !blocker && (ksq == SQ_E0 || ksq == SQ_E9) && (pos.pieces(Them) & enemyCenter)) { // 沉底炮
                     score += BottomCannon;
                 }
             }
@@ -224,6 +217,29 @@ namespace {
             {
                 if (pos.is_on_semiopen_file(Us, s))
                     score += RookOnOpenFile[pos.is_on_semiopen_file(Them, s)];
+                Bitboard enemyRooks = pos.pieces(Them, ROOK);
+                Bitboard ourRookFileRank = file_bb(file_of(s)) | rank_bb(rank_of(s));
+                Square anotherRook = lsb(pos.pieces(Us, ROOK) ^ s);
+                if ((s & ~attackedBy[Us][ALL_PIECES]) && (s & ~attacks_bb<ROOK>(anotherRook, pos.pieces()))) {
+                    enemyRooks = enemyRooks & ourRookFileRank;
+                    while (enemyRooks) {
+                        Square enemyRookSq = pop_lsb(enemyRooks);
+                        int blockerCount = popcount(between_bb(s, enemyRookSq) & pos.pieces()) - 1;
+                        if (blockerCount != 1)
+                            break;
+                        Bitboard knightBB = between_bb(s, enemyRookSq) & pos.pieces(Us, KNIGHT);
+                        Bitboard cannonBB = between_bb(s, enemyRookSq) & pos.pieces(Us, CANNON);
+                        if (knightBB | cannonBB) {
+                            if (knightBB) {
+                                Square knightSq = lsb(knightBB);
+                                Bitboard knightAttacks = attacks_bb<KNIGHT>(knightSq, pos.pieces());
+                                if (knightAttacks & attacks_bb<KNIGHT_TO>(s, pos.pieces()))
+                                    break;
+                            }
+                            score += PinnedRook;
+                        }
+                    }
+                }
             }
         }
         return score;
