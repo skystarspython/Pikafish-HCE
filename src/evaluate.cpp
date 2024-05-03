@@ -226,8 +226,9 @@ namespace {
                         int blockerCount = popcount(between_bb(s, enemyRookSq) & pos.pieces()) - 1;
                         if (blockerCount != 1)
                             break;
-                        Bitboard knightBB = between_bb(s, enemyRookSq) & pos.pieces(Us, KNIGHT);
-                        Bitboard cannonBB = between_bb(s, enemyRookSq) & pos.pieces(Us, CANNON);
+                        Bitboard weak = between_bb(s, enemyRookSq) & ~attackedBy[Us][ALL_PIECES];
+                        Bitboard knightBB = pos.pieces(Us, KNIGHT) & weak;
+                        Bitboard cannonBB = pos.pieces(Us, CANNON) & weak;
                         if (knightBB | cannonBB) {
                             if (knightBB) {
                                 Square knightSq = lsb(knightBB);
