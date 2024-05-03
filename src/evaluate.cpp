@@ -219,22 +219,26 @@ namespace {
                     score += RookOnOpenFile[pos.is_on_semiopen_file(Them, s)];
                 Bitboard enemyRooks = pos.pieces(Them, ROOK);
                 Bitboard ourRookFileRank = file_bb(file_of(s)) | rank_bb(rank_of(s));
-                enemyRooks = enemyRooks & ourRookFileRank;
-                while (enemyRooks) {
-                    Square enemyRookSq = pop_lsb(enemyRooks);
-                    int blockerCount = popcount(between_bb(s, enemyRookSq) & pos.pieces()) - 1;
-                    if (blockerCount != 1)
-                        break;
-                    Bitboard knightBB = between_bb(s, enemyRookSq) & pos.pieces(Us, KNIGHT);
-                    Bitboard cannonBB = between_bb(s, enemyRookSq) & pos.pieces(Us, CANNON);
-                    if (knightBB | cannonBB) {
-                        if (knightBB) {
-                            Square knightSq = lsb(knightBB);
-                            Bitboard knightAttacks = attacks_bb<KNIGHT>(knightSq, pos.pieces());
-                            if (knightAttacks & attacks_bb<KNIGHT_TO>(s, pos.pieces()))
-                                break;
+                Bitboard anotherRookBB = pos.pieces(Us, ROOK) ^ s;
+                Square anotherRook = pop_lsb(anotherRookBB);
+                if ((s & ~attackedBy[Us][ALL_PIECES]) && (s & ~attacks_bb<ROOK>(anotherRook, pos.pieces()))) {
+                    enemyRooks = enemyRooks & ourRookFileRank;
+                    while (enemyRooks) {
+                        Square enemyRookSq = pop_lsb(enemyRooks);
+                        int blockerCount = popcount(between_bb(s, enemyRookSq) & pos.pieces()) - 1;
+                        if (blockerCount != 1)
+                            break;
+                        Bitboard knightBB = between_bb(s, enemyRookSq) & pos.pieces(Us, KNIGHT);
+                        Bitboard cannonBB = between_bb(s, enemyRookSq) & pos.pieces(Us, CANNON);
+                        if (knightBB | cannonBB) {
+                            if (knightBB) {
+                                Square knightSq = lsb(knightBB);
+                                Bitboard knightAttacks = attacks_bb<KNIGHT>(knightSq, pos.pieces());
+                                if (knightAttacks & attacks_bb<KNIGHT_TO>(s, pos.pieces()))
+                                    break;
+                            }
+                            score += PinnedRook;
                         }
-                        score += PinnedRook;
                     }
                 }
             }
