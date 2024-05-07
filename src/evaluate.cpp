@@ -374,7 +374,7 @@ constexpr int rule60_a = 118, rule60_b = 221;
 
 Value Eval::evaluate(const Position& pos, int* complexity) {
 
-  Value v = Evaluation<NO_TRACE>(pos).value();
+  Value v = PurePieceValue ? pos.material_diff() : Evaluation<NO_TRACE>(pos).value();
 
   if (complexity)
       *complexity = abs(v - pos.material_diff());

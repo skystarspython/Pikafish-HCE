@@ -82,6 +82,7 @@ extern UCI::OptionsMap Options;
 extern bool EnableRule60;
 extern bool StrictThreeFold;
 extern bool ChaseWithCheck;
+extern bool PurePieceValue;
 
 } // namespace Stockfish
 
