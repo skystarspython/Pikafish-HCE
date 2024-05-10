@@ -273,6 +273,20 @@ namespace {
         if (me->specialized_eval_exists())
             return me->evaluate(pos);
 
+        if (!FullEvaluation) {
+            Score score = SCORE_ZERO;
+            for (int i = ROOK; i <= BISHOP; ++i) {
+                int whiteCount = popcount(pos.pieces(WHITE, (PieceType)i));
+                int blackCount = popcount(pos.pieces(BLACK, (PieceType)i));
+                score += make_score(whiteCount * PieceValue[MG][(PieceType)i], whiteCount * PieceValue[EG][(PieceType)i]);
+                score -= make_score(blackCount * PieceValue[MG][(PieceType)i], blackCount * PieceValue[EG][(PieceType)i]);
+            }
+            score += me->imbalance();
+            Value v = winnable(score);
+            v = (pos.side_to_move() == WHITE ? v : -v);
+            return v;
+        }
+
         Score score = pos.psq_score() + me->imbalance();
 
         if constexpr (T) {
