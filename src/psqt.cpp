@@ -33,7 +33,7 @@ auto constexpr S = make_score;
 
 // 'Bonus' contains Piece-Square parameters.
 // Scores are explicit for files A to E, implicitly mirrored for E to I.
-constexpr Score Bonus[][RANK_NB][int(FILE_NB) / 2 + 1] = {
+Score Bonus[][RANK_NB][int(FILE_NB) / 2 + 1] = {
   { },
   { // ROOK
    { S(-218,-132), S(  24,-242), S(-143, -73), S( -31,  -5), S(   7, -45)},
