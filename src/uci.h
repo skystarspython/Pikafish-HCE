@@ -69,8 +69,8 @@ private:
 
 void init(OptionsMap&);
 void loop(int argc, char* argv[]);
-int pawn_eval(Value v, int ply);
-std::string value(Value v, int ply = 64);
+int pawn_eval(Value v);
+std::string value(Value v);
 std::string square(Square s);
 std::string move(Move m);
 std::string pv(const Position& pos, Depth depth);
@@ -82,6 +82,7 @@ extern UCI::OptionsMap Options;
 extern bool EnableRule60;
 extern bool StrictThreeFold;
 extern bool ChaseWithCheck;
+extern bool FullEvaluation;
 
 } // namespace Stockfish
 

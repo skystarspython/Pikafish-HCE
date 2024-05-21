@@ -146,6 +146,9 @@ void init() {
     }
   }
 }
+TUNE(SetRange(-300, 300), Bonus[ROOK], init);
+TUNE(SetRange(-300, 300), Bonus[CANNON], init);
+TUNE(SetRange(-300, 300), Bonus[KNIGHT], init);
 } // namespace PSQT
 
 } // namespace Stockfish

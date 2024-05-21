@@ -82,13 +82,12 @@ namespace {
 
   void trace_eval(Position& pos) {
 
-      StateListPtr states(new std::deque<StateInfo>(1));
-      Position p;
-      p.set(pos.fen(), &states->back(), Threads.main());
+    StateListPtr states(new std::deque<StateInfo>(1));
+    Position p;
+    p.set(pos.fen(), &states->back(), Threads.main());
 
-      sync_cout << "\n" << Eval::trace(p) << sync_endl;
+    sync_cout << "\n" << Eval::trace(p) << sync_endl;
   }
-
 
   // setoption() is called when the engine receives the "setoption" UCI command.
   // The function updates the UCI option ("name") to the given value ("value").
@@ -194,30 +193,6 @@ namespace {
          << "\nNodes/second    : " << 1000 * nodes / elapsed << endl;
   }
 
-  // The win rate model returns the probability of winning given an eval
-  // and a game ply. It fits the LTC fishtest statistics rather accurately.
-  long double win_rate_model_double(Value v, int ply) {
-
-     // The model only captures up to 240 plies, so limit the input and then rescale
-     long double m = std::min(240, ply) / 64.0;
-
-     // The coefficients of a third-order polynomial fit is based on the fishtest data
-     // for two parameters that need to transform eval to the argument of a logistic
-     // function.
-     long double as[] = {  7.42211754, -26.5119614,   46.99271939, 340.67524114 };
-     long double bs[] = { -0.50136481,   4.9383151,  -11.86324223,  89.56581513 };
-     long double a = (((as[0] * m + as[1]) * m + as[2]) * m) + as[3];
-     long double b = (((bs[0] * m + bs[1]) * m + bs[2]) * m) + bs[3];
-
-     // Return the win rate
-     return 1 / (1 + std::exp((a - v) / b));
-  }
-
-  // Return the win rate in per mille units rounded to the nearest value
-  int win_rate_model(Value v, int ply) {
-      return int(0.5 + 1000 * win_rate_model_double(v, ply));
-  }
-
 } // namespace
 
 
@@ -291,10 +266,10 @@ void UCI::loop(int argc, char* argv[]) {
 }
 
 
-/// UCI::pawn_eval() uses the win_rate_model to convert
-/// internal score and ply to an objective pawn evaluation.
+/// UCI::pawn_eval() converts the internal score
+// to the pawn eval.
 
-int UCI::pawn_eval(Value v, int ply) {
+int UCI::pawn_eval(Value v) {
 
   return v * 100 / PawnValueEg;
 }
@@ -306,14 +281,14 @@ int UCI::pawn_eval(Value v, int ply) {
 /// mate <y>  Mate in 'y' moves (not plies). If the engine is getting mated,
 ///           uses negative values for 'y'.
 
-string UCI::value(Value v, int ply) {
+string UCI::value(Value v) {
 
   assert(-VALUE_INFINITE < v && v < VALUE_INFINITE);
 
   stringstream ss;
 
   if (abs(v) < VALUE_MATE_IN_MAX_PLY)
-      ss << "cp " << UCI::pawn_eval(v, ply);
+      ss << "cp " << UCI::pawn_eval(v);
   else
       ss << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
 

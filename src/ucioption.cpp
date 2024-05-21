@@ -36,6 +36,7 @@ UCI::OptionsMap Options; // Global object
 bool EnableRule60 = true;
 bool StrictThreeFold = false;
 bool ChaseWithCheck = true;
+bool FullEvaluation = true;
 
 namespace UCI {
 
@@ -47,6 +48,7 @@ void on_threads(const Option& o) { Threads.set(size_t(o)); }
 static void on_rule60(const Option& o) { EnableRule60 = bool(o); }
 static void on_strict_three_fold(const Option& o) { StrictThreeFold = bool(o); }
 static void on_chase_with_check(const Option& o) { ChaseWithCheck = bool(o); }
+static void on_full_evaluation(const Option& o) { FullEvaluation = bool(o); }
 
 /// Our case insensitive less() function as required by UCI protocol
 bool CaseInsensitiveLess::operator() (const string& s1, const string& s2) const {
@@ -75,6 +77,7 @@ void init(OptionsMap& o) {
   o["Sixty Move Rule"]       << Option(true, on_rule60);
   o["Strict Three Fold"]     << Option(false, on_strict_three_fold);
   o["Chase With Check"]      << Option(true, on_chase_with_check);
+  o["Full Evaluation"]      << Option(true, on_full_evaluation);
   o["UCI_LimitStrength"]     << Option(false);
   o["UCI_Elo"]               << Option(1350, 1350, 2850);
 }

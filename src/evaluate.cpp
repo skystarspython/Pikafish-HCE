@@ -50,9 +50,11 @@ namespace Trace {
 
     double to_cp(Value v) { return double(v) / PawnValueEg; }
 
+    /*
+    // unused function
     static void add(int idx, Color c, Score s) {
         scores[idx][c] = s;
-    }
+    }*/
 
     static void add(int idx, Score w, Score b = SCORE_ZERO) {
         scores[idx][WHITE] = w;
@@ -85,7 +87,6 @@ namespace {
     constexpr Score HollowCannon = S(85, 91);
     constexpr Score CentralKnight = S(50, 53);
     constexpr Score BottomCannon = S(18, 8);
-    Score IronBolt = S(0, 0);
     constexpr Score AdvisorBishopPair = S(24, -43);
     constexpr Score CrossedPawn[3][6] = {
         { S(-56, -40), S(6, 24), S(11, 7), S(-29, 7), S(-9, -1), S(-4, -7) },
@@ -104,7 +105,6 @@ namespace {
         {S(-582, -4894), S(2260, -2360), S(4002, -2435), S(4595, 1090), S(5389, 2949), S(9760, 3209), S(8500, 3453), S(11956, 6472), S(13619, 7657)}, // KNIGHT
         {S(1692, -2811), S(911, -1898), S(3017, -904), S(7134, 1537), S(9276, -1351)}, // BISHOP
     };
-    TUNE(SetRange(-100, 100), IronBolt);
 #undef S
 
     // Evaluation class computes and stores attacks tables and other working data
@@ -136,11 +136,6 @@ namespace {
         Bitboard attackedBy2[COLOR_NB];
 
         Score mobility[COLOR_NB] = { SCORE_ZERO, SCORE_ZERO };
-
-        Bitboard mobilityArea[COLOR_NB];
-
-        // Store the attacks from Advisors, Bishops and Pawns
-        Bitboard abpAttacks[COLOR_NB];
     };
 
 
@@ -149,29 +144,13 @@ namespace {
 
     template<Tracing T> template<Color Us>
     void Evaluation<T>::initialize() {
-
-        constexpr Color     Them = ~Us;
         const Square ksq = pos.square<KING>(Us);
-
 
         // Initialize attackedBy[] for king and pawns
         attackedBy[Us][KING] = attacks_bb<KING>(ksq);
         attackedBy[Us][PAWN] = pawn_attacks_bb<Us>(pos.pieces(Us, PAWN));
         attackedBy[Us][ALL_PIECES] = attackedBy[Us][KING] | attackedBy[Us][PAWN];
         attackedBy2[Us] = attackedBy[Us][KING] & attackedBy[Us][PAWN];
-        abpAttacks[Them] = mobilityArea[Us] = 0;
-        Bitboard moveableAdvisor = pos.pieces(Them, ADVISOR) & ~pos.blockers_for_king(Them);
-        Bitboard moveableBishop = pos.pieces(Them, BISHOP) & ~pos.blockers_for_king(Them);
-        while (moveableAdvisor) {
-            Square s = pop_lsb(moveableAdvisor);
-            abpAttacks[Them] |= attacks_bb<ADVISOR>(s);
-        }
-        while (moveableBishop) {
-            Square s = pop_lsb(moveableBishop);
-            abpAttacks[Them] |= attacks_bb<BISHOP>(s, pos.pieces());
-        }
-        abpAttacks[Them] |= pawn_attacks_bb<Them>(pos.pieces(Them, PAWN));
-        mobilityArea[Us] = ~abpAttacks[Them];
     }
 
 
@@ -181,8 +160,6 @@ namespace {
     Score Evaluation<T>::pieces() {
 
         constexpr Color Them = ~Us;
-        constexpr Direction Up   = pawn_push(Us);
-        constexpr Direction Down = -Up;
         const Square ksq = pos.square<KING>(Them);
         Bitboard b1 = pos.pieces(Us, Pt);
         Bitboard b;
@@ -204,31 +181,24 @@ namespace {
             attackedBy[Us][Pt] |= b;
             attackedBy[Us][ALL_PIECES] |= b;
 
-            int mob = popcount(b & mobilityArea[Us]);
+            int mob = popcount(b & ~attackedBy[Them][PAWN]);
             mobility[Us] += mobilityBonus[Pt][mob];
 
             if constexpr (Pt == CANNON) { // 炮的评估
-                int blockerCount = popcount(between_bb(s, ksq) & pos.pieces()) - 1;
+                int blocker = popcount(between_bb(s, ksq) & pos.pieces()) - 1;
                 constexpr Bitboard originalAdvisor = ((FileDBB | FileFBB) & (Rank0BB | Rank9BB));
                 Bitboard advisorBB = pos.pieces(Them, ADVISOR);
-                if (file_of(s) == FILE_E && (ksq == SQ_E0 || ksq == SQ_E9)) {
-                    if (popcount(originalAdvisor & advisorBB) == 2) {
-                        if (!blockerCount) { // 空头炮
-                            score += HollowCannon;
-                        }
-                        if (blockerCount == 2 && (between_bb(s, ksq) & pos.pieces(Them, KNIGHT) & attackedBy[Them][KING])) { // 炮镇窝心马
-                            score += CentralKnight;
-                        }
+                if (file_of(s) == FILE_E && (ksq == SQ_E0 || ksq == SQ_E9) && popcount(originalAdvisor & advisorBB) == 2) {
+                    if (!blocker) { // 空头炮
+                        score += HollowCannon;
                     }
-                    else if (blockerCount == 2 && pos.count<ADVISOR>(Them) + pos.count<BISHOP>(Them) == 4
-                        && popcount(between_bb(s, ksq) & pos.pieces(Them, ADVISOR, BISHOP)) == 2) {
-                        score += IronBolt;
+                    if (blocker == 2 && (between_bb(s, ksq) & pos.pieces(Them, KNIGHT) & attackedBy[Them][KING])) { // 炮镇窝心马
+                        score += CentralKnight;
                     }
                 }
                 Rank enemyBottom = (Us == WHITE ? RANK_9 : RANK_0);
                 Square enemyCenter = (Us == WHITE ? SQ_E8 : SQ_E1);
-                if (rank_of(s) == enemyBottom && !blockerCount && (ksq == SQ_E0 || ksq == SQ_E9)
-                    && (pos.pieces(Them) & enemyCenter)) { // 沉底炮
+                if (rank_of(s) == enemyBottom && !blocker && (ksq == SQ_E0 || ksq == SQ_E9) && (pos.pieces(Them) & enemyCenter)) { // 沉底炮
                     score += BottomCannon;
                 }
             }
@@ -303,6 +273,20 @@ namespace {
         if (me->specialized_eval_exists())
             return me->evaluate(pos);
 
+        if (!FullEvaluation) {
+            Score score = SCORE_ZERO;
+            for (int i = ROOK; i <= BISHOP; ++i) {
+                int whiteCount = popcount(pos.pieces(WHITE, (PieceType)i));
+                int blackCount = popcount(pos.pieces(BLACK, (PieceType)i));
+                score += make_score(whiteCount * PieceValue[MG][(PieceType)i], whiteCount * PieceValue[EG][(PieceType)i]);
+                score -= make_score(blackCount * PieceValue[MG][(PieceType)i], blackCount * PieceValue[EG][(PieceType)i]);
+            }
+            score += me->imbalance();
+            Value v = winnable(score);
+            v = (pos.side_to_move() == WHITE ? v : -v);
+            return v;
+        }
+
         Score score = pos.psq_score() + me->imbalance();
 
         if constexpr (T) {
@@ -357,7 +341,7 @@ using namespace Trace;
 
 /// evaluate() is the evaluator for the outer world. It returns a static
 /// evaluation of the position from the point of view of the side to move.
-int rule60_a = 118, rule60_b = 221;
+constexpr int rule60_a = 118, rule60_b = 221;
 
 Value Eval::evaluate(const Position& pos, int* complexity) {
 
@@ -417,8 +401,6 @@ std::string Eval::trace(Position& pos) {
     std::stringstream ss;
     ss << std::showpoint << std::noshowpos << std::fixed << std::setprecision(2);
 
-    Value v;
-
     // Reset any global variable used in eval
     pos.this_thread()->bestValue = VALUE_ZERO;
     pos.this_thread()->optimism[WHITE] = VALUE_ZERO;
@@ -455,7 +437,6 @@ std::string Eval::trace(Position& pos) {
             Value v = VALUE_NONE;
             if (pc != NO_PIECE && type_of(pc) != KING)
             {
-                auto st = pos.state();
                 pos.remove_piece(sq);
                 Value eval = evaluate(pos);
                 eval = pos.side_to_move() == WHITE ? eval : -eval;
@@ -469,7 +450,7 @@ std::string Eval::trace(Position& pos) {
         ss << board[row] << '\n';
     ss << '\n';
 
-    v = Evaluation<TRACE>(pos).value();
+    Value v = Evaluation<TRACE>(pos).value();
 
     ss << std::showpoint << std::noshowpos << std::fixed << std::setprecision(2)
         << " Contributing terms for the classical eval:\n"
@@ -492,7 +473,7 @@ std::string Eval::trace(Position& pos) {
 
     v = evaluate(pos);
     v = pos.side_to_move() == WHITE ? v : -v;
-    ss << "Final evaluation       " << to_cp(v) << " (white side) [with scaled NNUE, optimism, ...]\n";
+    ss << "Final evaluation       " << to_cp(v) << " (white side) [with optimism, ...]\n";
 
     return ss.str();
 }
