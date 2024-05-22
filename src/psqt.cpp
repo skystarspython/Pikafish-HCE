@@ -147,8 +147,8 @@ void init() {
   }
 }
 // PAWN TUNE
-TUNE(SetRange(-250, 250), Bonus[PAWN][3][0], Bonus[PAWN][3][2], Bonus[PAWN][3][4], Bonus[PAWN][3][6], Bonus[PAWN][3][8], init);
-TUNE(SetRange(-250, 250), Bonus[PAWN][4][0], Bonus[PAWN][4][2], Bonus[PAWN][4][4], Bonus[PAWN][4][6], Bonus[PAWN][4][8], init);
+TUNE(SetRange(-250, 250), Bonus[PAWN][3][0], Bonus[PAWN][3][2], Bonus[PAWN][3][4], init);
+TUNE(SetRange(-250, 250), Bonus[PAWN][4][0], Bonus[PAWN][4][2], Bonus[PAWN][4][4], init);
 TUNE(SetRange(-250, 250), Bonus[PAWN][5], init);
 TUNE(SetRange(-250, 250), Bonus[PAWN][6], init);
 TUNE(SetRange(-250, 250), Bonus[PAWN][7], init);
