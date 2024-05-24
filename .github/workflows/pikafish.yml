@@ -18,11 +18,6 @@ jobs:
     strategy:
       matrix:
         config:
-          - name: Windows
-            os: windows-latest
-            shell: msys2 {0}
-            ext: .exe
-            sde: /d/a/Pikafish-HCE/Pikafish-HCE/.output/sde-temp-files/sde-external-9.27.0-2023-09-13-win/sde.exe -future --
           - name: Linux
             os: ubuntu-20.04 
             shell: bash
