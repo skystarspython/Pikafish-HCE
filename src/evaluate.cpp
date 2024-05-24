@@ -97,7 +97,7 @@ namespace {
     constexpr Score TrappedKnight = S(-5, -2);
     constexpr Score RookOnOpenFile[2] = { S(0, -8), S(14, 16) };
     constexpr Score PiecesOnOneSide[5] = { S(-3, 5), S(-13, 36), S(18, 26), S(9, 26), S(10, -4) };
-    constexpr Score threateningBonus = S(5, 10);
+    constexpr Score threateningBonus = S(1, 2);
     constexpr Score mobilityBonus[PIECE_TYPE_NB][18] = {
         {}, // NO_PIECE_TYPE
         {S(-2655, -3045), S(423, -2895), S(-1144, -2170), S(155, -3012), S(-1067, -5183), S(1097, -3787), S(2037, -2581), S(2577, -3604), S(3512, -3371), S(3554, -5076), S(5818, -4178), S(6629, -946), S(8410, -3079), S(9004, -1200), S(11081, -3500), S(9035, -1212), S(11433, -3483), S(1686, -4329)}, // ROOK
@@ -247,7 +247,7 @@ namespace {
             score += PiecesOnOneSide[cnt];
         }
         Bitboard threateningArea = crossed & attackedBy[Us][ALL_PIECES] & ~attackedBy[Them][ALL_PIECES];
-        score += popcount(threateningArea) * threateningBonus / 16;
+        score += popcount(threateningArea) * threateningBonus;
         return score;
     }
 
