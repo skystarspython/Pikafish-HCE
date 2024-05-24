@@ -3,7 +3,7 @@ name: Pikafish
 on:
   push:
     branches:
-      - main
+      - ideas
 
 jobs:
   Pikafish:
@@ -23,7 +23,11 @@ jobs:
             shell: msys2 {0}
             ext: .exe
             sde: /d/a/Pikafish-HCE/Pikafish-HCE/.output/sde-temp-files/sde-external-9.27.0-2023-09-13-win/sde.exe -future --
-        arch: ["-vnni512", "-bmi2", "-avx2", "-modern"]
+          - name: Linux
+            os: ubuntu-20.04 
+            shell: bash
+            sde: /home/runner/work/Pikafish-HCE/Pikafish-HCE/.output/sde-temp-files/sde-external-9.27.0-2023-09-13-lin/sde -future --
+        arch: ["-bmi2"]
 
     defaults:
       run:
@@ -79,49 +83,3 @@ jobs:
             Copying.txt
             README.md
             Top CPU Contributors.txt
-  Pikafish-Android:
-    name: Android-${{ matrix.arch }}
-    runs-on: ubuntu-latest
-    env:
-      ARCH: ${{ matrix.arch }}
-      COMPILER: aarch64-linux-android21-clang++
-      COMP: ndk
-      EXE: pikafish-${{ matrix.arch }}
-      LDFLAGS: "-static -Wno-unused-command-line-argument"
-    strategy:
-      matrix:
-        arch: ["armv8"]
-    defaults:
-      run:
-        working-directory: src
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Install NDK
-        run: |
-          NDKV="21.4.7075529"
-          ANDROID_ROOT=/usr/local/lib/android
-          ANDROID_SDK_ROOT=$ANDROID_ROOT/sdk
-          SDKMANAGER=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager
-          echo "y" | $SDKMANAGER "ndk;$NDKV"
-          ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/$NDKV
-          ANDROID_NDK_BIN=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin
-          echo "ANDROID_NDK_BIN=$ANDROID_NDK_BIN" >> $GITHUB_ENV
-      - name: Compile ${{ matrix.arch }} build
-        run: |
-          export PATH=${{ env.ANDROID_NDK_BIN }}:$PATH
-          make clean
-          make -j build EXE=$EXE
-          make strip EXE=$EXE
-      - name: Copy binary to folder
-        run: |
-          cd ..
-          mkdir Android
-          cp src/$EXE Android
-      - uses: actions/upload-artifact@v3
-        with:	
-          name: Pikafish	
-          path: |
-            Android/*
-            AUTHORS
