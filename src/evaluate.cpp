@@ -209,6 +209,13 @@ namespace {
                 if (pos.is_on_semiopen_file(Us, s))
                     score += RookOnOpenFile[pos.is_on_semiopen_file(Them, s)];
             }
+            if constexpr (Pt == KNIGHT)
+            {
+                Bitboard aroundBB = shift<NORTH>(square_bb(s)) | shift<SOUTH>(square_bb(s)) | shift<EAST>(square_bb(s)) | shift<WEST>(square_bb(s));
+                if ((s & (FileABB | FileIBB | Rank0BB | Rank9BB)) && (pos.pieces(Them, ROOK) & aroundBB) && (pos.pieces(Us, ROOK) & aroundBB)) {
+                    score += TrappedKnight;
+                }
+            }
         }
         return score;
     }
