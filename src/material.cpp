@@ -66,9 +66,9 @@ namespace Stockfish {
         Endgame<INSUFFICIENT_MATERIAL> EvaluateIM[] = { Endgame<INSUFFICIENT_MATERIAL>(WHITE), Endgame<INSUFFICIENT_MATERIAL>(BLACK) };
 
         // Helper used to detect a given material distribution
-        // 车(任意士象) vs 士象全
+        // 车(任意士象) vs 士象全(任意兵卒)
         bool is_KAABBKR(const Position& pos, Color us) {
-            return pos.material(~us) == AdvisorValueMg * 2 + BishopValueMg * 2
+            return pos.material(~us) == AdvisorValueMg * 2 + BishopValueMg * 2 + PawnValueMg * pos.count<PAWN>(~us)
                 && pos.material(us) >= RookValueMg
                 && pos.count<ALL_PIECES>(us) == pos.count<ROOK>(us) + pos.count<ADVISOR>(us) + pos.count<BISHOP>(us) + 1;
         }
