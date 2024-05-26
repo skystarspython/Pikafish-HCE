@@ -1,7 +1,7 @@
 <div align="center">
 
 ## About Pikafish-HCE
-Pikafish-HCE is a fork of Pikafish that uses classical evaluation (handcrafted evaluation) instead of NNUE evaluation. This version has a higher NPS compared to the NNUE version, but it is weaker by about several hundred Elo. With very long time control, Pikafish-HCE has surpassed the previously strongest open-source engine, NewGG.
+Pikafish-HCE is a fork of Pikafish that uses classical evaluation (handcrafted evaluation) instead of NNUE evaluation. This version has a higher NPS compared to the NNUE version, but it is weaker by about several hundred Elo. With very long time control, Pikafish-HCE has surpassed the previously strongest open-source HCE engine, NewGG.
 
   [![Pikafish][pikafish-logo]][website-link]
 
