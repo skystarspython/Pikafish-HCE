@@ -94,6 +94,7 @@ namespace {
         { S(-79, 5), S(40, -8), S(32, 1), S(-22, 9), S(-20, -16), S(-40, -20) }
     };
     constexpr Score ConnectedPawn = S(5, -5);
+    constexpr Score TrappedKnight = S(-5, -2);
     constexpr Score RookOnOpenFile[2] = { S(0, -8), S(14, 16) };
     constexpr Score PiecesOnOneSide[5] = { S(-3, 5), S(-13, 36), S(18, 26), S(9, 26), S(10, -4) };
     constexpr Score mobilityBonus[PIECE_TYPE_NB][18] = {
@@ -206,6 +207,13 @@ namespace {
             {
                 if (pos.is_on_semiopen_file(Us, s))
                     score += RookOnOpenFile[pos.is_on_semiopen_file(Them, s)];
+            }
+            if constexpr (Pt == KNIGHT)
+            {
+                Bitboard aroundBB = shift<NORTH>(square_bb(s)) | shift<SOUTH>(square_bb(s)) | shift<EAST>(square_bb(s)) | shift<WEST>(square_bb(s));
+                if ((s & (FileABB | FileIBB | Rank0BB | Rank9BB)) && (pos.pieces(Them, ROOK) & aroundBB) && (pos.pieces(Us, ROOK) & aroundBB)) {
+                    score += TrappedKnight;
+                }
             }
         }
         return score;
