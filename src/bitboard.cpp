@@ -47,7 +47,7 @@ namespace {
 
   Bitboard RookTable    [0x108000];  // To store rook attacks
   Bitboard CannonTable  [0x108000];  // To store cannon attacks
-  Bitboard BishopTable  [0x228];     // To store bishop attacks
+  Bitboard BishopTable  [0x294];     // To store bishop attacks
   Bitboard KnightTable  [0x380];     // To store knight attacks
   Bitboard KnightToTable[0x3E0];     // To store by knight attacks
 
@@ -132,9 +132,9 @@ void Bitboards::init() {
               PseudoAttacks[KING][s1] |= safe_destination(s1, step);
           PseudoAttacks[KING][s1] &= Palace;
 
-          for (int step : { NORTH_WEST, NORTH_EAST, SOUTH_WEST, SOUTH_EAST } )
+          for (int step : { NORTH_WEST, NORTH_EAST, SOUTH_WEST, SOUTH_EAST }){
               PseudoAttacks[ADVISOR][s1] |= safe_destination(s1, step);
-          PseudoAttacks[ADVISOR][s1] &= Palace;
+          }
       }
 
       for (Square s2 = SQ_A0; s2 <= SQ_I9; ++s2)
@@ -214,8 +214,6 @@ namespace {
     Bitboard b = 0;
     for (const auto& d : pt == BISHOP ? BishopDirections : KnightDirections)
       b |= lame_leaper_path<pt>(d, s);
-    if (pt == BISHOP)
-      b &= HalfBB[rank_of(s) > RANK_4];
     return b;
   }
 
@@ -228,8 +226,6 @@ namespace {
       if (is_ok(to) && distance(s, to) < 4 && !(lame_leaper_path<pt>(d, s) & occupied))
         b |= to;
     }
-    if (pt == BISHOP)
-      b &= HalfBB[rank_of(s) > RANK_4];
     return b;
   }
 

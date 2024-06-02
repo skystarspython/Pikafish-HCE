@@ -187,7 +187,9 @@ void Position::set_check_info(StateInfo* si) const {
   si->checkSquares[KNIGHT] = attacks_bb<KNIGHT_TO>(oksq, pieces());
   si->checkSquares[CANNON] = attacks_bb<CANNON>(oksq, pieces());
   si->checkSquares[ROOK]   = attacks_bb<ROOK>(oksq, pieces());
-  si->checkSquares[KING]   = si->checkSquares[ADVISOR] = si->checkSquares[BISHOP] = 0;
+  si->checkSquares[ADVISOR] = attacks_bb<ADVISOR>(oksq, pieces());
+  si->checkSquares[BISHOP] = attacks_bb<BISHOP>(oksq, pieces());
+  si->checkSquares[KING] = 0;
 }
 
 
@@ -273,7 +275,8 @@ Bitboard Position::blockers_for_king(Bitboard sliders, Square s, Bitboard& pinne
 
   // Snipers are pieces that attack 's' when a piece and other pieces are removed
   Bitboard snipers = (  (attacks_bb<  ROOK>(s) & (pieces(ROOK) | pieces(CANNON) | pieces(KING)))
-                      | (attacks_bb<KNIGHT>(s) & pieces(KNIGHT))) & sliders;
+                      | (attacks_bb<KNIGHT>(s) & pieces(KNIGHT))
+                      | (attacks_bb<BISHOP>(s) & pieces(BISHOP))) & sliders;
   Bitboard occupancy = pieces() ^ (snipers & ~pieces(CANNON));
 
   while (snipers)
@@ -317,6 +320,8 @@ Bitboard Position::checkers_to(Color c, Square s, Bitboard occupied) const {
 
     return ( (pawn_attacks_to_bb(c, s)           & pieces(      PAWN))
            | (attacks_bb<KNIGHT_TO>(s, occupied) & pieces(    KNIGHT))
+           | (attacks_bb<   BISHOP>(s, occupied) & pieces(BISHOP))
+           | (attacks_bb<  ADVISOR>(s, occupied) & pieces(ADVISOR))
            | (attacks_bb<     ROOK>(s, occupied) & pieces(KING, ROOK))
            | (attacks_bb<   CANNON>(s, occupied) & pieces(    CANNON)) ) & pieces(c);
 }

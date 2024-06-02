@@ -3,7 +3,7 @@ name: Pikafish
 on:
   push:
     branches:
-      - main
+      - special
 
 jobs:
   Pikafish:
