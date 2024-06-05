@@ -126,15 +126,15 @@ void Bitboards::init() {
       PseudoAttacks[BISHOP][s1] = attacks_bb<BISHOP>(s1, 0);
       PseudoAttacks[KNIGHT][s1] = attacks_bb<KNIGHT>(s1, 0);
 
+      for (int step : { NORTH_WEST, NORTH_EAST, SOUTH_WEST, SOUTH_EAST }){
+          PseudoAttacks[ADVISOR][s1] |= safe_destination(s1, step);
+      }
+
       // Only generate pseudo attacks in the palace squares for king and advisor
       if (Palace & s1) {
           for (int step : { NORTH, SOUTH, WEST, EAST } )
               PseudoAttacks[KING][s1] |= safe_destination(s1, step);
           PseudoAttacks[KING][s1] &= Palace;
-
-          for (int step : { NORTH_WEST, NORTH_EAST, SOUTH_WEST, SOUTH_EAST }){
-              PseudoAttacks[ADVISOR][s1] |= safe_destination(s1, step);
-          }
       }
 
       for (Square s2 = SQ_A0; s2 <= SQ_I9; ++s2)
