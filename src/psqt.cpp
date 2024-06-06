@@ -146,6 +146,34 @@ void init() {
     }
   }
 }
+
+// PAWN TUNE
+TUNE(SetRange(-250, 250), Bonus[PAWN][3][0], Bonus[PAWN][3][2], Bonus[PAWN][3][4], Bonus[PAWN][3][6], Bonus[PAWN][3][8], init);
+TUNE(SetRange(-250, 250), Bonus[PAWN][4][0], Bonus[PAWN][4][2], Bonus[PAWN][4][4], Bonus[PAWN][4][6], Bonus[PAWN][4][8], init);
+TUNE(SetRange(-250, 250), Bonus[PAWN][5], init);
+TUNE(SetRange(-250, 250), Bonus[PAWN][6], init);
+TUNE(SetRange(-250, 250), Bonus[PAWN][7], init);
+TUNE(SetRange(-250, 250), Bonus[PAWN][8], init);
+TUNE(SetRange(-250, 250), Bonus[PAWN][9], init);
+
+// BISHOP TUNE
+TUNE(SetRange(-250, 250), Bonus[BISHOP][0][2], init);
+TUNE(SetRange(-250, 250), Bonus[BISHOP][2][0], init);
+TUNE(SetRange(-250, 250), Bonus[BISHOP][2][4], init);
+TUNE(SetRange(-250, 250), Bonus[BISHOP][4][2], init);
+
+// ADVISOR TUNE
+TUNE(SetRange(-250, 250), Bonus[ADVISOR][0][3], init);
+TUNE(SetRange(-250, 250), Bonus[ADVISOR][1][4], init);
+TUNE(SetRange(-250, 250), Bonus[ADVISOR][2][3], init);
+
+// KING TUNE
+TUNE(SetRange(-250, 250), Bonus[KING][0][3], init);
+TUNE(SetRange(-250, 250), Bonus[KING][0][4], init);
+TUNE(SetRange(-250, 250), Bonus[KING][1][3], init);
+TUNE(SetRange(-250, 250), Bonus[KING][1][4], init);
+TUNE(SetRange(-250, 250), Bonus[KING][2][3], init);
+TUNE(SetRange(-250, 250), Bonus[KING][2][4], init);
 } // namespace PSQT
 
 } // namespace Stockfish
