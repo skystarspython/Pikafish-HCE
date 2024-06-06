@@ -3,7 +3,7 @@ name: Tune
 on:
   push:
     branches:
-      - tune
+      - special-tune
 
 jobs:
   linux:
