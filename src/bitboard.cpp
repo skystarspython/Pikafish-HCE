@@ -47,7 +47,7 @@ namespace {
 
   Bitboard RookTable    [0x108000];  // To store rook attacks
   Bitboard CannonTable  [0x108000];  // To store cannon attacks
-  Bitboard BishopTable  [0x294];     // To store bishop attacks
+  Bitboard BishopTable  [0x2B0];     // To store bishop attacks
   Bitboard KnightTable  [0x380];     // To store knight attacks
   Bitboard KnightToTable[0x3E0];     // To store by knight attacks
 
